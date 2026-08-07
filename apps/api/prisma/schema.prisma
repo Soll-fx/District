@@ -1,0 +1,529 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Direction {
+  LONG
+  SHORT
+}
+
+enum TradeSession {
+  ASIA
+  LONDON
+  NEW_YORK
+}
+
+enum TradeSource {
+  JOURNAL
+  BROKER
+}
+
+enum IdeaStatus {
+  WATCH
+  HIT
+  INVALID
+  ARCHIVE
+}
+
+enum TicketStatus {
+  OPEN
+  WAITING
+  CLOSED
+}
+
+enum MetricCategory {
+  PROP
+  TOURNAMENT
+  TRADING
+  COMMUNITY
+}
+
+enum ChangeType {
+  FEATURE
+  MAJOR
+  FIX
+  SECURITY
+}
+
+enum TournamentStatus {
+  DRAFT
+  OPEN
+  RUNNING
+  FINISHED
+  CANCELLED
+}
+
+enum TournamentMatchStatus {
+  PENDING
+  LIVE
+  PLAYED
+}
+
+model User {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  passwordHash     String
+  name             String
+  avatarUrl        String?
+  role             Role     @default(USER)
+  twoFactorEnabled Boolean  @default(false)
+  twoFactorCodeHash    String?
+  twoFactorCodeExpiry  DateTime?
+  twoFactorBackupCodes String?
+  locale           String   @default("ru")
+  timezone         String   @default("Europe/Moscow")
+  instagram        String?
+  telegram         String?
+  youtube          String?
+  tradingview      String?
+  emailNotif       Boolean  @default(true)
+  pushNotif        Boolean  @default(true)
+  ideaAlerts       Boolean  @default(true)
+  weeklyDigest     Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  accounts         Account[]
+  trades           Trade[]
+  postMortems      PostMortem[]
+  tags             Tag[]
+  assets           Asset[]
+  ideas            Idea[]
+  strategies       Strategy[]
+  tickets          Ticket[]
+  messages         TicketMessage[]
+  achievements     Achievement[]
+  profileMetrics   ProfileMetric[]
+  reactions        Reaction[]
+  integrations     Integration[]
+  promoCodes       PromoCode[]       @relation("PromoCreator")
+  promoRedemptions PromoRedemption[]
+  streams          Stream[]
+  streamReactions  StreamReaction[]
+  pushSubscriptions PushSubscription[]
+  sessions         Session[]
+  tournamentEntries TournamentPlayer[]
+  tournamentMatchesA TournamentMatch[] @relation("TournamentMatchA")
+  tournamentMatchesB TournamentMatch[] @relation("TournamentMatchB")
+}
+
+model Session {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash    String    @unique
+  deviceName   String
+  browser      String?
+  os           String?
+  ip           String?
+  createdAt    DateTime  @default(now())
+  lastActiveAt DateTime  @default(now())
+  expiresAt    DateTime
+  revokedAt    DateTime?
+
+  @@index([userId])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Account {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  type         String
+  serverName   String?
+  balance      Float      @default(0)
+  currency     String     @default("USD")
+  lastSyncedAt DateTime?
+  createdAt    DateTime   @default(now())
+
+  trades Trade[]
+}
+
+model Trade {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId   String?
+  account     Account?      @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  asset       String
+  direction   Direction
+  entry       Float?
+  exit        Float?
+  lots        Float?
+  pnl         Float         @default(0)
+  rMultiplier Float?
+  source      TradeSource   @default(JOURNAL)
+  externalId  String?       @unique
+  commission  Float?
+  swap        Float?
+  session     TradeSession?
+  entryDate   DateTime
+  exitDate    DateTime?
+  notes       String?
+  link        String?
+  flagged     Boolean       @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime      @default(now())
+
+  ideaFrom Idea? @relation("IdeaToTrade")
+
+  tags        TradeTag[]
+  postMortems PostMortem[]
+}
+
+model Tag {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+  color  String @default("#7C6CF0")
+
+  trades TradeTag[]
+
+  @@unique([userId, name])
+}
+
+model TradeTag {
+  tradeId String
+  tagId   String
+  trade   Trade  @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([tradeId, tagId])
+}
+
+model PostMortem {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tradeId     String?
+  trade       Trade?    @relation(fields: [tradeId], references: [id], onDelete: SetNull)
+  asset       String
+  direction   Direction
+  pnl         Float     @default(0)
+  rMultiplier Float?
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([tradeId])
+}
+
+model Asset {
+  id       String  @id @default(cuid())
+  userId   String?
+  user     User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol   String
+  name     String
+  color    String  @default("#7C6CF0")
+  category String
+
+  @@unique([userId, symbol])
+}
+
+model Idea {
+  id               String     @id @default(cuid())
+  userId           String
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset            String
+  direction        Direction
+  entry            String?
+  tp               String?
+  sl               String?
+  thesis           String?
+  tvLink           String?
+  status           IdeaStatus @default(WATCH)
+  convertedTradeId String?    @unique
+  convertedTrade   Trade?     @relation("IdeaToTrade", fields: [convertedTradeId], references: [id], onDelete: SetNull)
+  deletedAt        DateTime?
+  createdAt        DateTime   @default(now())
+}
+
+model Strategy {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  meta        String?
+  color       String   @default("#14B8A6")
+  createdAt   DateTime @default(now())
+}
+
+model NewsItem {
+  id         String   @id @default(cuid())
+  country    String
+  instrument String   @default("USD")
+  impact     String
+  title      String
+  time       String?
+  prev       String?
+  forecast   String?
+  date       DateTime @default(now())
+  source     String?
+  extId      String?  @unique
+}
+
+model GeopoliticsPost {
+  id         String   @id @default(cuid())
+  telegramId String?  @unique
+  emoji      String?
+  region     String
+  title      String
+  body       String
+  tags       String[]
+  source     String   @default("MarketTwits")
+  impact     String
+  impactKey  String   @default("medium")
+  regionEn   String?
+  titleEn    String?
+  bodyEn     String?
+  tagsEn     String[] @default([])
+  impactEn   String?
+  live       Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
+model Course {
+  id      String  @id @default(cuid())
+  title   String
+  tag     String
+  color   String
+  lessons Int
+  done    Int     @default(0)
+  time    String
+  locked  Boolean @default(false)
+  order   Int     @default(0)
+}
+
+model ChangelogEntry {
+  id      String     @id @default(cuid())
+  version String
+  title   String
+  text    String
+  type    ChangeType @default(FEATURE)
+  date    DateTime   @default(now())
+}
+
+model Ticket {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  category  String
+  status    TicketStatus @default(OPEN)
+  deletedAt DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  messages TicketMessage[]
+}
+
+model TicketMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  text      String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+}
+
+model Achievement {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  category    MetricCategory @default(COMMUNITY)
+  value       String?
+  awardedAt   DateTime       @default(now())
+
+  reactions Reaction[]
+}
+
+model Reaction {
+  id            String      @id @default(cuid())
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emoji         String
+  createdAt     DateTime    @default(now())
+
+  @@unique([achievementId, userId, emoji])
+}
+
+model ProfileMetric {
+  id       String         @id @default(cuid())
+  userId   String
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key      String
+  label    String
+  value    String
+  category MetricCategory @default(TRADING)
+  visible  Boolean        @default(true)
+  order    Int            @default(0)
+
+  @@unique([userId, key])
+}
+
+model Integration {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider  String
+  connected Boolean  @default(false)
+  meta      Json?
+  createdAt DateTime @default(now())
+}
+
+model PromoCode {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  durationDays Int      @default(30)
+  isActive     Boolean  @default(true)
+  createdById  String?
+  createdBy    User?    @relation("PromoCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+
+  redemptions PromoRedemption[]
+}
+
+model PromoRedemption {
+  id        String    @id @default(cuid())
+  promoId   String
+  promo     PromoCode @relation(fields: [promoId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@unique([promoId, userId])
+}
+
+enum StreamType {
+  YOUTUBE
+  VIMEO
+  GOOGLE_DRIVE
+  UPLOAD
+}
+
+model Stream {
+  id           String     @id @default(cuid())
+  title        String
+  description  String     @default("")
+  url          String
+  type         StreamType @default(YOUTUBE)
+  thumbnailUrl String?
+  fileName     String?
+  mimeType     String?
+  createdById  String?
+  createdBy    User?      @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime   @default(now())
+
+  reactions StreamReaction[]
+}
+
+model StreamReaction {
+  id        String   @id @default(cuid())
+  streamId  String
+  stream    Stream   @relation(fields: [streamId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String
+  createdAt DateTime @default(now())
+
+  @@unique([streamId, userId, emoji])
+}
+
+model Tournament {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  status      TournamentStatus @default(DRAFT)
+  format      String           @default("single_elimination_16")
+  minPlayers  Int              @default(8)
+  maxPlayers  Int              @default(16)
+  prizePool   String?
+  rules       Json?
+  requireBroker Boolean      @default(false)
+  startAt     DateTime
+  endDate     DateTime?
+  finishedAt  DateTime?
+  createdAt   DateTime         @default(now())
+
+  players TournamentPlayer[]
+  rounds  TournamentRound[]
+  matches TournamentMatch[]
+}
+
+model TournamentPlayer {
+  id           String     @id @default(cuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seed         Int?
+  joinedAt     DateTime   @default(now())
+
+  @@unique([tournamentId, userId])
+  @@index([userId])
+}
+
+model TournamentRound {
+  id           String     @id @default(cuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  number       Int
+
+  matches TournamentMatch[]
+
+  @@unique([tournamentId, number])
+}
+
+model TournamentMatch {
+  id           String                @id @default(cuid())
+  tournamentId String
+  tournament   Tournament            @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  roundId      String
+  round        TournamentRound       @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  position     Int
+  playerAId    String?
+  playerA      User?                 @relation("TournamentMatchA", fields: [playerAId], references: [id], onDelete: SetNull)
+  playerBId    String?
+  playerB      User?                 @relation("TournamentMatchB", fields: [playerBId], references: [id], onDelete: SetNull)
+  scoreA       Float?
+  scoreB       Float?
+  winnerId     String?
+  status       TournamentMatchStatus @default(PENDING)
+  startTime    DateTime?
+  endTime      DateTime?
+  streamUrl    String?
+  playedAt     DateTime?
+
+  @@index([tournamentId, roundId])
+}

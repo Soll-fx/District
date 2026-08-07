@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+dist/
+.env
+.env.local
+.env.production
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+coverage/
+
+# локальная БД / загруженные файлы (не в git)
+apps/api/prisma/dev.db
+apps/api/prisma/dev.db-journal
+apps/api/uploads/
+uploads/
