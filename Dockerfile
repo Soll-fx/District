@@ -21,4 +21,4 @@ COPY --from=build /app/apps/api/prisma ./prisma
 COPY --from=build /app/apps/api/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/apps/api/node_modules/@prisma ./node_modules/@prisma
 EXPOSE 4000
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]
+CMD ["sh", "-c", "echo '=== running migrations ==='; npx prisma migrate deploy; echo '=== migrations done ==='; PORT=${PORT:-4000} node dist/src/main.js"]
