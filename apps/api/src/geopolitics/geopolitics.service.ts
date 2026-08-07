@@ -83,12 +83,10 @@ export class GeopoliticsService implements OnModuleInit {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async onModuleInit() {
-    try {
-      await this.sync();
-    } catch (e) {
-      this.logger.error(`Первичная синхронизация геополитики не удалась: ${(e as Error).message}`);
-    }
+  onModuleInit() {
+    this.sync().catch((e) =>
+      this.logger.error(`Первичная синхронизация геополитики не удалась: ${(e as Error).message}`),
+    );
     this.timer = setInterval(() => {
       this.sync().catch((e) =>
         this.logger.error(`Синхронизация геополитики не удалась: ${(e as Error).message}`),

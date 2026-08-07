@@ -37,12 +37,10 @@ export class NewsService implements OnModuleInit {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async onModuleInit() {
-    try {
-      await this.sync();
-    } catch (e) {
-      this.logger.error(`Первичная синхронизация новостей не удалась: ${(e as Error).message}`);
-    }
+  onModuleInit() {
+    this.sync().catch((e) =>
+      this.logger.error(`Первичная синхронизация новостей не удалась: ${(e as Error).message}`),
+    );
     this.timer = setInterval(() => {
       this.sync().catch((e) =>
         this.logger.error(`Синхронизация новостей не удалась: ${(e as Error).message}`),
