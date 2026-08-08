@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping API health
-        run: curl -sf --max-time 30 "https://districtapi-e685wamm.b4a.run/api/health"
+        run: curl -sf --max-time 30 "https://districtapi-rmneq4wy.b4a.run/api/health"
