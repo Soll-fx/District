@@ -12,6 +12,11 @@ async function bootstrap() {
   const config = app.get(ConfigService);
 
   app.setGlobalPrefix('api');
+  app
+    .getHttpAdapter()
+    .get('/api/health', (_req: unknown, res: { json: (body: unknown) => void }) => {
+      res.json({ status: 'ok', ts: Date.now() });
+    });
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads/' });
   app.useGlobalPipes(
     new ValidationPipe({
