@@ -8,14 +8,16 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    env:
+      API_URL: ${{ secrets.API_URL }}
     steps:
       - name: Sync news (ForexFactory)
         run: |
           curl -sf --max-time 60 -X POST \
-            "https://districtapi-kmlm01vk.b4a.run/api/internal/sync/news" \
+            "${API_URL}/api/internal/sync/news" \
             -H "x-sync-key: ${{ secrets.SYNC_KEY }}"
       - name: Sync geopolitics (MarketTwits)
         run: |
           curl -sf --max-time 60 -X POST \
-            "https://districtapi-kmlm01vk.b4a.run/api/internal/sync/geopolitics" \
+            "${API_URL}/api/internal/sync/geopolitics" \
             -H "x-sync-key: ${{ secrets.SYNC_KEY }}"

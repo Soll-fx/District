@@ -10,4 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping API health
-        run: curl -sf --max-time 30 "https://districtapi-kmlm01vk.b4a.run/api/health"
+        env:
+          API_URL: ${{ secrets.API_URL }}
+        run: curl -sf --max-time 30 "${API_URL}/api/health"
