@@ -1,12 +1,13 @@
 import { createHash } from 'node:crypto';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 
 const FF_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
 const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 const SOURCE_FF = 'forexfactory';
-const SYNC_INTERVAL = 4 * 60 * 60 * 1000;
+const DEFAULT_SYNC_INTERVAL = 30 * 60 * 1000;
 
 interface FfEvent {
   title: string;
@@ -35,18 +36,25 @@ export class NewsService implements OnModuleInit {
   private readonly logger = new Logger(NewsService.name);
   private timer?: ReturnType<typeof setInterval>;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
+  ) {}
 
   onModuleInit() {
     this.sync().catch((e) =>
       this.logger.error(`Первичная синхронизация новостей не удалась: ${(e as Error).message}`),
     );
+    const intervalMs =
+      Number(this.config.get<string>('NEWS_SYNC_INTERVAL_MS')) ||
+      DEFAULT_SYNC_INTERVAL;
     this.timer = setInterval(() => {
       this.sync().catch((e) =>
         this.logger.error(`Синхронизация новостей не удалась: ${(e as Error).message}`),
       );
-    }, SYNC_INTERVAL);
+    }, intervalMs);
     this.timer.unref?.();
+    this.logger.log(`Новости: интервал синхронизации ${Math.round(intervalMs / 1000)} с`);
   }
 
   list(impact?: string) {

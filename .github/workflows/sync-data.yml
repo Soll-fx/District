@@ -1,0 +1,21 @@
+name: sync-data
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync news (ForexFactory)
+        run: |
+          curl -sf --max-time 60 -X POST \
+            "https://districtapi-kmlm01vk.b4a.run/api/internal/sync/news" \
+            -H "x-sync-key: ${{ secrets.SYNC_KEY }}"
+      - name: Sync geopolitics (MarketTwits)
+        run: |
+          curl -sf --max-time 60 -X POST \
+            "https://districtapi-kmlm01vk.b4a.run/api/internal/sync/geopolitics" \
+            -H "x-sync-key: ${{ secrets.SYNC_KEY }}"

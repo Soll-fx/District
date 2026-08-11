@@ -23,6 +23,7 @@ import { TournamentsModule } from './tournaments/tournaments.module';
 import { BrokerModule } from './broker/broker.module';
 import { TelegramModule } from './common/telegram/telegram.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { InternalModule } from './internal/internal.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     BrokerModule,
     TelegramModule,
     NotificationsModule,
+    InternalModule,
   ],
 })
 export class AppModule {}

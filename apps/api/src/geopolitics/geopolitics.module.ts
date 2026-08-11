@@ -5,5 +5,6 @@ import { GeopoliticsService } from './geopolitics.service';
 @Module({
   controllers: [GeopoliticsController],
   providers: [GeopoliticsService],
+  exports: [GeopoliticsService],
 })
 export class GeopoliticsModule {}

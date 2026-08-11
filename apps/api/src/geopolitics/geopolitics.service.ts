@@ -1,10 +1,11 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 
 const CHANNEL_URL = 'https://t.me/s/markettwits';
 const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
-const SYNC_INTERVAL = 60_000;
+const DEFAULT_SYNC_INTERVAL = 60_000;
 
 const FLAG_REGIONS: Record<string, string> = {
   '🇺🇸': 'США',
@@ -81,18 +82,22 @@ export class GeopoliticsService implements OnModuleInit {
   private readonly logger = new Logger(GeopoliticsService.name);
   private timer?: ReturnType<typeof setInterval>;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) {}
 
   onModuleInit() {
     this.sync().catch((e) =>
       this.logger.error(`Первичная синхронизация геополитики не удалась: ${(e as Error).message}`),
     );
+    const intervalMs =
+      Number(this.config.get<string>('GEOPOLITICS_SYNC_INTERVAL_MS')) ||
+      DEFAULT_SYNC_INTERVAL;
     this.timer = setInterval(() => {
       this.sync().catch((e) =>
         this.logger.error(`Синхронизация геополитики не удалась: ${(e as Error).message}`),
       );
-    }, SYNC_INTERVAL);
+    }, intervalMs);
     this.timer.unref?.();
+    this.logger.log(`Геополитика: интервал синхронизации ${Math.round(intervalMs / 1000)} с`);
   }
 
   async list(lang?: string) {
