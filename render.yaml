@@ -1,45 +1,25 @@
-# Render Blueprint — District
-# Деплой: свяжите GitHub-репозиторий, Render поднимет оба сервиса автоматически.
-# После создания укажите в панели Render значения переменных с sync:false.
-
+# Render Blueprint — District API
+# Стабильный URL: https://district-api.onrender.com (не ротируется при деплоях)
 services:
   - type: web
     name: district-api
-    runtime: node
-    rootDir: apps/api
-    buildCommand: npm ci && npm run build && npx prisma generate
-    startCommand: npx prisma migrate deploy && node dist/src/main.js
-    healthCheckPath: /docs
+    runtime: docker
+    repo: https://github.com/Soll-fx/District
+    branch: main
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: "4000"
+      - key: CORS_ORIGIN
+        value: https://district-wccn-beta.vercel.app
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET
         sync: false
-      - key: CORS_ORIGIN
-        sync: false
-      - key: TELEGRAM_BOT_TOKEN
-        sync: false
-      - key: TELEGRAM_ADMIN_CHAT_ID
-        sync: false
-      - key: VAPID_PUBLIC_KEY
-        sync: false
-      - key: VAPID_PRIVATE_KEY
-        sync: false
-      - key: VAPID_SUBJECT
-        sync: false
-
-  - type: web
-    name: district-web
-    runtime: node
-    rootDir: apps/web
-    buildCommand: npm ci && npm run build
-    startCommand: npm run start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: NEXT_PUBLIC_API_URL
-        sync: false
-      - key: NEXT_PUBLIC_WS_URL
+      - key: SYNC_KEY
         sync: false
