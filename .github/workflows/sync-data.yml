@@ -13,11 +13,11 @@ jobs:
     steps:
       - name: Sync news (ForexFactory)
         run: |
-          curl -sf --max-time 60 -X POST \
+          curl -sf --max-time 120 -X POST \
             "${API_URL}/api/internal/sync/news" \
             -H "x-sync-key: ${{ secrets.SYNC_KEY }}"
       - name: Sync geopolitics (MarketTwits)
         run: |
-          curl -sf --max-time 60 -X POST \
+          curl -sf --max-time 120 -X POST \
             "${API_URL}/api/internal/sync/geopolitics" \
             -H "x-sync-key: ${{ secrets.SYNC_KEY }}"
