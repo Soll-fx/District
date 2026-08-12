@@ -187,7 +187,10 @@ export default function DashboardPage() {
             {visibleNews.map((n) => (
               <div
                 key={n.id}
-                className="flex items-center gap-2.5 rounded-xl border border-transparent bg-card px-3 py-2.5 transition-colors hover:bg-bg"
+                className={cn(
+                  "flex items-center gap-2.5 rounded-xl border border-transparent bg-card px-3 py-2.5 transition-colors hover:bg-bg",
+                  n.done && "opacity-50",
+                )}
               >
                 <span
                   className={cn(
@@ -210,6 +213,14 @@ export default function DashboardPage() {
                   )}
                 >
                   {n.impact}
+                </span>
+                <span
+                  className={cn(
+                    "pill shrink-0",
+                    n.done ? "pill-neutral" : "pill-pos",
+                  )}
+                >
+                  {n.done ? t("news.done") : t("news.pending")}
                 </span>
               </div>
             ))}

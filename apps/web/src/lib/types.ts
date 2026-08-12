@@ -247,6 +247,7 @@ export type NewsItem = {
   prev?: string | null;
   forecast?: string | null;
   date: string;
+  done?: boolean;
 };
 
 export type GeopoliticsPost = {

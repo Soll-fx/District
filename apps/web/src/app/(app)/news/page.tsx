@@ -70,7 +70,13 @@ export default function NewsPage() {
             <Card className="overflow-hidden">
               <div className="divide-y divide-card-border">
                 {list.map((n) => (
-                  <div key={n.id} className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-bg/60">
+                  <div
+                    key={n.id}
+                    className={cn(
+                      "flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-bg/60",
+                      n.done && "opacity-50",
+                    )}
+                  >
                     <MarketIcon symbol={n.country} size={36} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[13.5px] font-bold text-text-1">{n.title}</p>
@@ -85,6 +91,9 @@ export default function NewsPage() {
                       )}
                     >
                       {n.impact}
+                    </span>
+                    <span className={cn("pill shrink-0", n.done ? "pill-neutral" : "pill-pos")}>
+                      {n.done ? t("news.done") : t("news.pending")}
                     </span>
                   </div>
                 ))}

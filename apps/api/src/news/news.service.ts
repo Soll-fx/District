@@ -68,7 +68,18 @@ export class NewsService implements OnModuleInit {
         ...(impact ? { impact } : {}),
       },
       orderBy: [{ date: 'asc' }, { time: 'asc' }],
-    });
+    }).then((items) =>
+      items.map((n) => {
+        let done = false;
+        if (n.time) {
+          const [h, m] = n.time.split(':').map(Number);
+          const at = new Date(n.date);
+          at.setHours(h, m, 0, 0);
+          done = at.getTime() <= now.getTime();
+        }
+        return { ...n, done };
+      }),
+    );
   }
 
   async sync() {
