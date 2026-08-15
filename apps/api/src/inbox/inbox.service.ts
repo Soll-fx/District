@@ -35,7 +35,13 @@ export class InboxService {
         category,
         messages: { create: { authorId: userId, text, imageUrl: imageUrl || null } },
       },
-      include: { messages: true },
+      include: {
+        messages: {
+          include: {
+            author: { select: { id: true, name: true, role: true } },
+          },
+        },
+      },
     });
 
     await this.notifyNewTicket(userId, ticket.id, ticket.subject, ticket.category, text, imageUrl);
@@ -45,7 +51,14 @@ export class InboxService {
   async detail(userId: string, id: string) {
     const ticket = await this.prisma.ticket.findFirst({
       where: { id, userId, deletedAt: null },
-      include: { messages: { orderBy: { createdAt: 'asc' } } },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' },
+          include: {
+            author: { select: { id: true, name: true, role: true } },
+          },
+        },
+      },
     });
     if (!ticket) throw new NotFoundException('Тикет не найден');
     return ticket;

@@ -153,12 +153,20 @@ export default function InboxPage() {
               <div className="flex-1 space-y-3 p-4">
                 {active.data.messages.map((m) => {
                   const mine = m.authorId === me?.id;
+                  const authorLabel =
+                    m.author?.role === "ADMIN" ? t("inbox.support") : mine ? t("inbox.you") : (m.author?.name || t("inbox.support"));
                   return (
-                    <div key={m.id} className={cn("flex", mine ? "justify-start" : "justify-end")}>
+                    <div
+                      key={m.id}
+                      className={cn("flex flex-col gap-1", mine ? "items-end" : "items-start")}
+                    >
+                      <span className={cn("px-1 text-[10.5px] font-bold", mine ? "text-text-3" : "text-hero")}>
+                        {authorLabel}
+                      </span>
                       <div
                         className={cn(
                           "max-w-[75%] rounded-2xl px-4 py-2.5 text-[13px] leading-relaxed",
-                          mine ? "rounded-bl-md bg-bg text-text-1" : "rounded-br-md bg-hero text-white",
+                          mine ? "rounded-br-md bg-hero text-white" : "rounded-bl-md bg-bg text-text-1",
                         )}
                       >
                         {m.imageUrl && (
@@ -170,7 +178,7 @@ export default function InboxPage() {
                           />
                         )}
                         {m.text && <p>{m.text}</p>}
-                        <p className={cn("num mt-1 text-[10.5px]", mine ? "text-text-3" : "text-white/50")}>
+                        <p className={cn("num mt-1 text-[10.5px]", mine ? "text-white/50" : "text-text-3")}>
                           {timeLabel(m.createdAt)}
                         </p>
                       </div>

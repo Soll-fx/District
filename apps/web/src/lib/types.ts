@@ -185,6 +185,7 @@ export type InboxTicketMessage = {
   imageUrl?: string | null;
   createdAt: string;
   authorId: string;
+  author?: { id: string; name: string; role: string } | null;
 };
 
 export type InboxTicket = {
