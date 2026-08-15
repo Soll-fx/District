@@ -26,6 +26,19 @@ export class TelegramService {
     return Boolean(this.token && this.chatId);
   }
 
+  get adminChatId() {
+    return this.chatId;
+  }
+
+  ticketRef(ticketId: string) {
+    return `🎫 #${ticketId}`;
+  }
+
+  parseTicketRef(text: string): string | null {
+    const match = /🎫\s*#([A-Za-z0-9_-]+)/.exec(text ?? '');
+    return match?.[1] ?? null;
+  }
+
   escapeHtml(value: string) {
     return value.replace(/[&<>"']/g, (c) => {
       switch (c) {
@@ -153,7 +166,7 @@ export class TelegramService {
         body: JSON.stringify({
           offset,
           timeout,
-          allowed_updates: ['callback_query'],
+          allowed_updates: ['callback_query', 'message'],
         }),
       });
       const data = await res.json().catch(() => null);

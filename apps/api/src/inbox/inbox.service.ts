@@ -67,7 +67,12 @@ export class InboxService {
       },
     });
 
-    await this.notifyMessage(userId, ticket.subject, text, imageUrl);
+    await this.prisma.ticket.update({
+      where: { id: ticket.id },
+      data: { status: TicketStatus.OPEN },
+    });
+
+    await this.notifyMessage(userId, ticket.id, ticket.subject, text, imageUrl);
     return message;
   }
 
@@ -111,7 +116,8 @@ export class InboxService {
       `<b>Пользователь:</b> ${author}\n` +
       `<b>Тема:</b> ${safeSubject}\n` +
       `<b>Категория:</b> ${safeCategory}\n` +
-      `<b>Сообщение:</b> ${safeText}`;
+      `<b>Сообщение:</b> ${safeText}\n\n` +
+      `${this.telegram.ticketRef(ticketId)}\n💬 Ответьте на это сообщение — ответ уйдёт пользователю`;
     if (imageUrl) {
       await this.telegram.sendPhoto(imageUrl, caption, ticketId);
     } else {
@@ -121,6 +127,7 @@ export class InboxService {
 
   private async notifyMessage(
     userId: string,
+    ticketId: string,
     subject: string,
     text: string,
     imageUrl?: string | null,
@@ -132,11 +139,12 @@ export class InboxService {
     const caption =
       `<b>💬 Новое сообщение</b> в тикете «${safeSubject}»\n` +
       `<b>От:</b> ${author}\n` +
-      `<b>Текст:</b> ${safeText}`;
+      `<b>Текст:</b> ${safeText}\n\n` +
+      `${this.telegram.ticketRef(ticketId)}\n💬 Ответьте на это сообщение — ответ уйдёт пользователю`;
     if (imageUrl) {
-      await this.telegram.sendPhoto(imageUrl, caption);
+      await this.telegram.sendPhoto(imageUrl, caption, ticketId);
     } else {
-      await this.telegram.sendMessage(caption);
+      await this.telegram.sendMessage(caption, ticketId);
     }
   }
 }
