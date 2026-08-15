@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { TicketStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TelegramService } from './telegram.service';
+import { InboxGateway } from '../../inbox/inbox.gateway';
 
 @Injectable()
 export class TelegramUpdatesService implements OnModuleInit {
@@ -14,6 +15,7 @@ export class TelegramUpdatesService implements OnModuleInit {
     private readonly config: ConfigService,
     private readonly telegram: TelegramService,
     private readonly prisma: PrismaService,
+    private readonly inboxGateway: InboxGateway,
   ) {}
 
   onModuleInit() {
@@ -75,6 +77,7 @@ export class TelegramUpdatesService implements OnModuleInit {
         data: { status: TicketStatus.CLOSED },
       });
     }
+    this.inboxGateway.pushToUser(ticket.userId);
 
     await this.telegram.answerCallback(
       cq.id,
@@ -138,6 +141,7 @@ export class TelegramUpdatesService implements OnModuleInit {
         data: { status: TicketStatus.WAITING },
       });
     }
+    this.inboxGateway.pushToUser(ticket.userId);
 
     const isPhoto = Boolean(reply.photo?.length);
     const oldText = isPhoto ? (reply.caption ?? '') : (reply.text ?? '');

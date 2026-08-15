@@ -2,12 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { TicketStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { TelegramService } from '../common/telegram/telegram.service';
+import { InboxGateway } from './inbox.gateway';
 
 @Injectable()
 export class InboxService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly telegram: TelegramService,
+    private readonly gateway: InboxGateway,
   ) {}
 
   async list(userId: string) {
@@ -86,12 +88,18 @@ export class InboxService {
     });
 
     await this.notifyMessage(userId, ticket.id, ticket.subject, text, imageUrl);
+    this.gateway.pushToUser(userId);
     return message;
   }
 
   async setStatus(userId: string, id: string, status: TicketStatus) {
     await this.detail(userId, id);
-    return this.prisma.ticket.update({ where: { id }, data: { status } });
+    const updated = await this.prisma.ticket.update({
+      where: { id },
+      data: { status },
+    });
+    this.gateway.pushToUser(userId);
+    return updated;
   }
 
   async softDelete(userId: string, id: string) {
@@ -100,6 +108,7 @@ export class InboxService {
       where: { id },
       data: { deletedAt: new Date() },
     });
+    this.gateway.pushToUser(userId);
     return { deleted: true };
   }
 

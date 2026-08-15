@@ -18,6 +18,7 @@ import {
   useTickets,
 } from "@/hooks/use-inbox";
 import { useLang } from "@/lib/i18n";
+import { useInboxSocket } from "@/hooks/use-inbox-socket";
 import type { InboxTicket } from "@/lib/types";
 
 const STATUS_META: Record<InboxTicket["status"], { labelKey: string; cls: string }> = {
@@ -35,6 +36,7 @@ const CATEGORY_KEY: Record<string, string> = {
 };
 
 export default function InboxPage() {
+  useInboxSocket();
   const me = useAuth((s) => s.user);
   const { t } = useLang();
   const tickets = useTickets();
