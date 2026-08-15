@@ -213,6 +213,10 @@ function SettingsInner() {
   const [pwBusy, setPwBusy] = useState(false);
   const [pwMsg, setPwMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
+  const [nameTouched, setNameTouched] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [timezoneTouched, setTimezoneTouched] = useState(false);
+
   const [twoFaState, setTwoFaState] = useState<"idle" | "enable-code" | "disable-code" | "backup">("idle");
   const [twoFaCode, setTwoFaCode] = useState("");
   const [twoFaMsg, setTwoFaMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
@@ -362,9 +366,11 @@ function SettingsInner() {
   };
 
   const profileData = profile.data;
-  const effectiveName = name !== "" ? name : profileData?.name ?? "";
-  const effectiveEmail = email !== "" ? email : profileData?.email ?? "";
-  const effectiveTimezone = timezone !== "" ? timezone : profileData?.timezone ?? "";
+  const effectiveName = nameTouched ? name : profileData?.name ?? "";
+  const effectiveEmail = emailTouched ? email : profileData?.email ?? "";
+  const effectiveTimezone = timezoneTouched
+    ? timezone
+    : profileData?.timezone ?? "";
   const selectTz = TZ_VALUES.includes(effectiveTimezone) ? effectiveTimezone : "UTC";
 
   const tzOptions = useMemo(() => {
@@ -538,11 +544,11 @@ function SettingsInner() {
             <div className="space-y-3">
               <div>
                 <label className="field-label">{t("settings.name")}</label>
-                <input className="field" value={effectiveName} onChange={(e) => setName(e.target.value)} />
+                <input className="field" value={effectiveName} onChange={(e) => { setName(e.target.value); setNameTouched(true); }} />
               </div>
               <div>
                 <label className="field-label">{t("settings.email")}</label>
-                <input className="field" value={effectiveEmail} onChange={(e) => setEmail(e.target.value)} />
+                <input className="field" value={effectiveEmail} onChange={(e) => { setEmail(e.target.value); setEmailTouched(true); }} />
               </div>
             </div>
             <div className="mt-4 flex items-center justify-end gap-3">
@@ -607,6 +613,7 @@ function SettingsInner() {
                 value={selectTz}
                 onValueChange={(v) => {
                   setTimezone(v);
+                  setTimezoneTouched(true);
                   updateProfile.mutate({
                     name: effectiveName.trim(),
                     email: effectiveEmail.trim(),
