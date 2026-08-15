@@ -8,7 +8,7 @@ export function useTickets() {
   return useQuery({
     queryKey: ["inbox", "tickets"],
     queryFn: () => api.get<InboxTicket[]>("/inbox"),
-    refetchInterval: 10_000,
+    refetchInterval: 4_000,
   });
 }
 
@@ -17,7 +17,7 @@ export function useTicket(id: string | null) {
     queryKey: ["inbox", "tickets", id],
     queryFn: () => api.get<InboxTicket>(`/inbox/${id}`),
     enabled: Boolean(id),
-    refetchInterval: 10_000,
+    refetchInterval: 4_000,
   });
 }
 
