@@ -74,7 +74,7 @@ export function Dock() {
       >
         <div className="no-scrollbar flex items-center gap-0.5 overflow-x-auto rounded-2xl bg-[#12182B] px-2 py-2 shadow-dock sm:gap-1">
           {/* "+" — быстрое действие */}
-          <div className="relative shrink-0">
+          <div className="shrink-0">
             <button
               type="button"
               onClick={() => setQuickOpen((v) => !v)}
@@ -88,25 +88,29 @@ export function Dock() {
             <AnimatePresence>
               {quickOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute bottom-[calc(100%+12px)] left-0 w-44 overflow-hidden rounded-xl bg-[#12182B] p-1.5 shadow-dock"
+                  className="flex items-center gap-0.5"
                 >
                   <Link
                     href="/trades?new=1"
                     onClick={() => setQuickOpen(false)}
-                    className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-semibold text-white/85 hover:bg-white/10 hover:text-white"
+                    className="dock-item relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal/20 text-teal sm:h-10 sm:w-10"
+                    aria-label={t("dock.newTrade")}
                   >
-                    <CandlestickChart size={16} className="text-teal" /> {t("dock.newTrade")}
+                    <CandlestickChart size={19} />
+                    <span className="dock-tip">{t("dock.newTrade")}</span>
                   </Link>
                   <Link
                     href="/ideas?new=1"
                     onClick={() => setQuickOpen(false)}
-                    className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-semibold text-white/85 hover:bg-white/10 hover:text-white"
+                    className="dock-item relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange/20 text-orange sm:h-10 sm:w-10"
+                    aria-label={t("dock.newIdea")}
                   >
-                    <Lightbulb size={16} className="text-orange" /> {t("dock.newIdea")}
+                    <Lightbulb size={19} />
+                    <span className="dock-tip">{t("dock.newIdea")}</span>
                   </Link>
                 </motion.div>
               )}
