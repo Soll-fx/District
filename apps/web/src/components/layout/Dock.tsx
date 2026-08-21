@@ -17,8 +17,6 @@ import {
   Wallet,
   NotebookPen,
   Plus,
-  X,
-  LayoutGrid,
   Radio,
   type LucideIcon,
 } from "lucide-react";
@@ -29,23 +27,21 @@ type NavItem = {
   href: string;
   labelKey: string;
   icon: LucideIcon;
-  external?: boolean;
-  section?: "main" | "extra";
 };
 
 const NAV: NavItem[] = [
-  { href: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, section: "main" },
-  { href: "/trades", labelKey: "nav.trades", icon: CandlestickChart, section: "main" },
-  { href: "/analytics", labelKey: "nav.analytics", icon: ChartSpline, section: "main" },
-  { href: "/ideas", labelKey: "nav.ideas", icon: Lightbulb, section: "main" },
-  { href: "/streams", labelKey: "nav.streams", icon: Radio, section: "extra" },
-  { href: "/rewards", labelKey: "nav.rewards", icon: Trophy, section: "extra" },
-  { href: "/accounts", labelKey: "nav.accounts", icon: Wallet, section: "extra" },
-  { href: "/postmortems", labelKey: "nav.postmortems", icon: NotebookPen, section: "extra" },
-  { href: "/inbox", labelKey: "nav.inbox", icon: Inbox, section: "extra" },
-  { href: "/changelog", labelKey: "nav.changelog", icon: FileClock, section: "extra" },
-  { href: "/settings", labelKey: "nav.settings", icon: Settings, section: "extra" },
-  { href: "/trash", labelKey: "nav.trash", icon: Trash2, section: "extra" },
+  { href: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { href: "/trades", labelKey: "nav.trades", icon: CandlestickChart },
+  { href: "/analytics", labelKey: "nav.analytics", icon: ChartSpline },
+  { href: "/ideas", labelKey: "nav.ideas", icon: Lightbulb },
+  { href: "/streams", labelKey: "nav.streams", icon: Radio },
+  { href: "/rewards", labelKey: "nav.rewards", icon: Trophy },
+  { href: "/accounts", labelKey: "nav.accounts", icon: Wallet },
+  { href: "/postmortems", labelKey: "nav.postmortems", icon: NotebookPen },
+  { href: "/inbox", labelKey: "nav.inbox", icon: Inbox },
+  { href: "/changelog", labelKey: "nav.changelog", icon: FileClock },
+  { href: "/settings", labelKey: "nav.settings", icon: Settings },
+  { href: "/trash", labelKey: "nav.trash", icon: Trash2 },
 ];
 
 function DockIcon({ item, active, t }: { item: NavItem; active: boolean; t: (k: string) => string }) {
@@ -53,7 +49,7 @@ function DockIcon({ item, active, t }: { item: NavItem; active: boolean; t: (k: 
   return (
     <Link
       href={item.href}
-      className={`dock-item relative flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200 hover:-translate-y-1 sm:h-10 sm:w-10 ${
+      className={`dock-item relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-200 hover:-translate-y-1 sm:h-10 sm:w-10 ${
         active
           ? "bg-white text-[#12182B] shadow-[0_4px_16px_rgba(0,0,0,0.35)]"
           : "text-white/75 hover:bg-white/10 hover:text-white"
@@ -69,24 +65,20 @@ export function Dock() {
   const pathname = usePathname();
   const { t } = useLang();
   const user = useAuth((s) => s.user);
-  const [moreOpen, setMoreOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
-
-  const main = NAV.filter((n) => n.section === "main");
-  const extra = NAV.filter((n) => n.section === "extra");
 
   return (
     <>
-      {/* ── нижний док ── */}
+      {/* ── нижний док: все разделы в прокручиваемой строке ── */}
       <nav
-        className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-50 -translate-x-1/2 md:hidden"
+        className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-50 w-max max-w-[calc(100vw-1.5rem)] -translate-x-1/2 md:hidden"
         aria-label="Основная навигация"
       >
-        <div className="flex items-center gap-0.5 rounded-2xl bg-[#12182B] px-2 py-2 shadow-dock sm:gap-1">
+        <div className="no-scrollbar flex items-center gap-0.5 overflow-x-auto rounded-2xl bg-[#12182B] px-2 py-2 shadow-dock sm:gap-1">
           {/* декоративный логотип-аватар → карточка профиля */}
           <Link
             href="/settings?tab=card"
-            className="dock-item relative mx-0.5 hidden h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-violet to-teal text-[13px] font-extrabold text-white sm:flex sm:h-10 sm:w-10"
+            className="dock-item relative mx-0.5 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-violet to-teal text-[13px] font-extrabold text-white sm:h-10 sm:w-10"
             aria-label={t("settings.card")}
           >
             {user?.avatarUrl ? (
@@ -99,13 +91,10 @@ export function Dock() {
           </Link>
 
           {/* "+" — быстрое действие */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
               type="button"
-              onClick={() => {
-                setQuickOpen((v) => !v);
-                setMoreOpen(false);
-              }}
+              onClick={() => setQuickOpen((v) => !v)}
               className="dock-item relative flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#12182B] shadow-[0_4px_16px_rgba(255,255,255,0.25)] transition-all duration-200 hover:-translate-y-1 sm:h-10 sm:w-10"
               aria-label="Быстрое действие"
             >
@@ -141,92 +130,13 @@ export function Dock() {
             </AnimatePresence>
           </div>
 
-          <div className="mx-1 h-5 w-px bg-white/15" />
+          <div className="mx-1 h-5 w-px shrink-0 bg-white/15" />
 
-          {main.map((item) => (
+          {NAV.map((item) => (
             <DockIcon key={item.href} item={item} t={t} active={pathname === item.href} />
           ))}
-
-          {/* второстепенные — на десктопе в доке, на мобильных в "Ещё" */}
-          <div className="hidden items-center gap-0.5 sm:flex sm:gap-1">
-            {extra.slice(0, 4).map((item) => (
-              <DockIcon key={item.href} item={item} t={t} active={pathname === item.href} />
-            ))}
-            <div className="mx-1 h-5 w-px bg-white/15" />
-            {extra.slice(4).map((item) => (
-              <DockIcon key={item.href} item={item} t={t} active={pathname === item.href} />
-            ))}
-          </div>
-
-          {/* мобильная кнопка "Ещё" */}
-          <button
-            type="button"
-            onClick={() => {
-              setMoreOpen((v) => !v);
-              setQuickOpen(false);
-            }}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-white/75 transition-all duration-200 hover:-translate-y-1 hover:bg-white/10 hover:text-white sm:hidden"
-            aria-label="Все разделы"
-          >
-            <LayoutGrid size={18} />
-          </button>
         </div>
       </nav>
-
-      {/* ── мобильный лист всех разделов ── */}
-      <AnimatePresence>
-        {moreOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-[#12182B]/40 backdrop-blur-[2px]"
-              onClick={() => setMoreOpen(false)}
-            />
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl bg-white p-4 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-dock"
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <span className="label-caps">{t("dock.allSections")}</span>
-                <button
-                  type="button"
-                  onClick={() => setMoreOpen(false)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-bg text-text-2"
-                  aria-label="Закрыть"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {extra.map((item) => {
-                  const Icon = item.icon;
-                  const active = pathname === item.href;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMoreOpen(false)}
-                      className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 text-center text-[11px] font-semibold ${
-                        active
-                          ? "border-hero bg-hero text-white"
-                          : "border-card-border bg-card text-text-2"
-                      }`}
-                    >
-                      <Icon size={18} />
-                      {t(item.labelKey)}
-                    </Link>
-                  );
-                })}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </>
   );
 }

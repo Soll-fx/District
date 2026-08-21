@@ -368,6 +368,15 @@ body {
   outline-offset: 2px;
 }
 
+/* ── скрытый скроллбар (горизонтальный док на мобильных) ── */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
