@@ -42,7 +42,7 @@ export function Modal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
-            className={`fixed left-1/2 top-1/2 z-50 flex max-h-[min(74vh,600px)] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-2xl bg-card p-5 shadow-lg ${
+            className={`fixed left-1/2 top-1/2 z-50 flex max-h-[min(74dvh,600px)] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-2xl bg-card p-5 shadow-lg ${
               size === "xl" ? MAX_W.xl : wide ? MAX_W.lg : MAX_W.md
             }`}
           >

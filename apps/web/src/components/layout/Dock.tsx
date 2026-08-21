@@ -79,7 +79,7 @@ export function Dock() {
     <>
       {/* ── нижний док ── */}
       <nav
-        className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 md:hidden"
+        className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-50 -translate-x-1/2 md:hidden"
         aria-label="Основная навигация"
       >
         <div className="flex items-center gap-0.5 rounded-2xl bg-[#12182B] px-2 py-2 shadow-dock sm:gap-1">
@@ -189,7 +189,7 @@ export function Dock() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl bg-white p-4 pb-8 shadow-dock"
+              className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl bg-white p-4 pb-[calc(2rem+env(safe-area-inset-bottom))] shadow-dock"
             >
               <div className="mb-3 flex items-center justify-between">
                 <span className="label-caps">{t("dock.allSections")}</span>

@@ -622,7 +622,7 @@ function SettingsInner() {
                   });
                 }}
               >
-                <SelectTrigger className="w-[220px]">
+                <SelectTrigger className="w-full sm:w-[220px]">
                   <SelectValue placeholder={t("settings.timezone")} />
                 </SelectTrigger>
                 <SelectContent>

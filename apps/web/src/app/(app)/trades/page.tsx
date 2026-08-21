@@ -290,7 +290,8 @@ function TradesInner() {
 
       {view === "list" && (
         <div className="card animate-in overflow-hidden">
-          <table className="w-full text-left">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[880px] text-left">
             <thead>
               <tr className="border-b border-card-border text-[11px] font-bold uppercase tracking-[0.08em] text-text-3">
                 <th className="px-4 py-3">{lang("trades.detail.asset")}</th>
@@ -368,7 +369,8 @@ function TradesInner() {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
           {filtered.length === 0 && <EmptyFiltered />}
         </div>
       )}

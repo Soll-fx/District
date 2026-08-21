@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, JetBrains_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
@@ -25,6 +25,13 @@ export const metadata: Metadata = {
   title: "Sollo — журнал сделок и аналитика",
   description:
     "Приватный трейдинг-дашборд: журнал сделок, аналитика, идеи, библиотека стратегий, академия и рейтинг.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0a0a0f",
 };
 
 export default function RootLayout({

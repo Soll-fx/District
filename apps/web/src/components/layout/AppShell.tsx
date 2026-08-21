@@ -46,7 +46,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-full">
       <Sidebar />
       <TopBar />
-      <main className="mx-auto max-w-[1440px] px-4 pb-32 pt-20 sm:px-6 md:pb-12 md:pl-[112px] md:pt-6">
+      <main className="mx-auto max-w-[1440px] px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-20 sm:px-6 md:pb-12 md:pl-[112px] md:pt-6">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={pathname}

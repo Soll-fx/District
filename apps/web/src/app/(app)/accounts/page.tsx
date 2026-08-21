@@ -128,7 +128,7 @@ export default function AccountsPage() {
                   <span className="text-[12px] font-bold text-text-3">{acc.currency}</span>
                 </p>
               </div>
-              <div className="mt-auto grid grid-cols-4 gap-1 border-t border-card-border pt-3">
+              <div className="mt-auto grid grid-cols-2 gap-1 border-t border-card-border pt-3 sm:grid-cols-4">
                 <div className="min-w-0">
                   <p className="truncate text-[10px] font-bold uppercase tracking-[0.12em] text-text-3">
                     {t("dashboard.kpi.winrate")}

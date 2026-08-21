@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { MessageSquare, Send, Search, LifeBuoy, Trash2, Paperclip, X, ImagePlus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { MessageSquare, Send, Search, LifeBuoy, Trash2, Paperclip, X, ImagePlus, ArrowLeft } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Modal } from "@/components/ui/modal";
@@ -49,6 +49,11 @@ export default function InboxPage() {
   const [draftImage, setDraftImage] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+  }, [active.data?.messages.length, activeId]);
 
   const send = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,7 +88,7 @@ export default function InboxPage() {
 
       <div className="grid gap-5 lg:grid-cols-3">
         {/* Список тикетов */}
-        <Card className="animate-in overflow-hidden">
+        <Card className={cn("animate-in overflow-hidden", activeId && "hidden lg:block")}>
           <div className="border-b border-card-border p-3">
             <div className="relative">
               <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-3" />
@@ -133,7 +138,15 @@ export default function InboxPage() {
           {active.data ? (
             <>
               <div className="flex items-center justify-between border-b border-card-border p-4">
-                <div className="min-w-0">
+                <button
+                  type="button"
+                  onClick={() => setActiveId(null)}
+                  className="-ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-3 transition-colors hover:bg-bg hover:text-text-1 lg:hidden"
+                  aria-label={t("common.back")}
+                >
+                  <ArrowLeft size={17} />
+                </button>
+                <div className="min-w-0 flex-1">
                   <p className="truncate text-[14px] font-extrabold text-text-1">{active.data.subject}</p>
                   <p className="mt-0.5 text-[11.5px] font-semibold text-text-3">
                     {active.data.category} · {t("inbox.updated")} {timeLabel(active.data.updatedAt)}
@@ -152,7 +165,7 @@ export default function InboxPage() {
                 </button>
               </div>
 
-              <div className="flex-1 space-y-3 p-4">
+              <div ref={scrollRef} className="max-h-[55dvh] flex-1 space-y-3 overflow-y-auto p-4 lg:max-h-[480px]">
                 {active.data.messages.map((m) => {
                   const mine = m.authorId === me?.id;
                   const authorLabel =
