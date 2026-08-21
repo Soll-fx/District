@@ -53,7 +53,7 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const name = dto.name ?? (dto.email.split('@')[0] || 'User');
     const code = generateOtpCode();
-    const { devCode } = this.mail.sendOtp(dto.email, code);
+    const { devCode } = await this.mail.sendOtp(dto.email, code);
 
     const token = this.jwt.sign(
       {
@@ -137,7 +137,7 @@ export class AuthService {
         twoFactorCodeExpiry: new Date(Date.now() + CODE_TTL_MS),
       },
     });
-    const { devCode } = this.mail.sendOtp(user.email, code);
+    const { devCode } = await this.mail.sendOtp(user.email, code);
     const token = this.jwt.sign(
       { sub: user.id, type: 'email-login' },
       { expiresIn: '5m' },
@@ -171,7 +171,7 @@ export class AuthService {
         twoFactorCodeExpiry: new Date(Date.now() + CODE_TTL_MS),
       },
     });
-    const { devCode } = this.mail.sendOtp(user.email, code);
+    const { devCode } = await this.mail.sendOtp(user.email, code);
     const twoFactorToken = this.jwt.sign(
       { sub: user.id, type: '2fa' },
       { expiresIn: '5m' },

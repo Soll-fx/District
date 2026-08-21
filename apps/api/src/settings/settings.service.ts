@@ -79,7 +79,7 @@ export class SettingsService {
         twoFactorCodeExpiry: new Date(Date.now() + 10 * 60 * 1000),
       },
     });
-    const { devCode } = this.mail.sendOtp(user.email, code);
+    const { devCode } = await this.mail.sendOtp(user.email, code);
     return { sent: true, devCode };
   }
 
