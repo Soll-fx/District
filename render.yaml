@@ -24,6 +24,10 @@ services:
         sync: false
       - key: SYNC_KEY
         sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_FROM_EMAIL
+        sync: false
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
