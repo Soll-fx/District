@@ -1,5 +1,6 @@
-# Render Blueprint — District API
-# Стабильный URL: https://district-api.onrender.com (не ротируется при деплоях)
+# Render Blueprint — Sollo API (репозиторий пока называется District)
+# Основной домен фронтенда: https://sollo.eu.org (после делегирования eu.org)
+# Запасной адрес: https://district-wccn-beta.vercel.app
 services:
   - type: web
     name: district-api
@@ -16,7 +17,7 @@ services:
       - key: PORT
         value: "4000"
       - key: CORS_ORIGIN
-        value: https://district-wccn-beta.vercel.app
+        value: https://sollo.eu.org,https://www.sollo.eu.org,https://district-wccn-beta.vercel.app
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET
