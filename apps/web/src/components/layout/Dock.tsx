@@ -21,7 +21,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useLang } from "@/lib/i18n";
-import { useAuth } from "@/lib/auth-store";
 
 type NavItem = {
   href: string;
@@ -64,7 +63,6 @@ function DockIcon({ item, active, t }: { item: NavItem; active: boolean; t: (k: 
 export function Dock() {
   const pathname = usePathname();
   const { t } = useLang();
-  const user = useAuth((s) => s.user);
   const [quickOpen, setQuickOpen] = useState(false);
 
   return (
@@ -75,21 +73,6 @@ export function Dock() {
         aria-label="Основная навигация"
       >
         <div className="no-scrollbar flex items-center gap-0.5 overflow-x-auto rounded-2xl bg-[#12182B] px-2 py-2 shadow-dock sm:gap-1">
-          {/* декоративный логотип-аватар → карточка профиля */}
-          <Link
-            href="/settings?tab=card"
-            className="dock-item relative mx-0.5 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-violet to-teal text-[13px] font-extrabold text-white sm:h-10 sm:w-10"
-            aria-label={t("settings.card")}
-          >
-            {user?.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
-            ) : (
-              (user?.name ?? user?.email ?? "D")[0].toUpperCase()
-            )}
-            <span className="dock-tip">{t("settings.card")}</span>
-          </Link>
-
           {/* "+" — быстрое действие */}
           <div className="relative shrink-0">
             <button
