@@ -26,10 +26,15 @@ export class MailService {
   }
 
   async sendOtp(to: string, code: string): Promise<{ devCode?: string }> {
+    const apiKey = process.env.BREVO_API_KEY;
+    if (apiKey) {
+      return this.sendViaBrevo(apiKey, to, code);
+    }
+
     const transporter = this.getTransporter();
     if (!transporter) {
       if (process.env.NODE_ENV === 'production') {
-        this.logger.error('SMTP не настроен — письмо не отправлено');
+        this.logger.error('Почта не настроена — письмо не отправлено');
         throw new ServiceUnavailableException(
           'Сервис отправки почты временно недоступен',
         );
@@ -57,6 +62,58 @@ export class MailService {
         'Не удалось отправить код, попробуйте ещё раз',
       );
     }
+  }
+
+  private async sendViaBrevo(
+    apiKey: string,
+    to: string,
+    code: string,
+  ): Promise<{ devCode?: string }> {
+    const fromEmail = process.env.BREVO_FROM_EMAIL ?? process.env.SMTP_USER;
+    if (!fromEmail) {
+      this.logger.error('BREVO_FROM_EMAIL не задан');
+      throw new ServiceUnavailableException(
+        'Сервис отправки почты временно недоступен',
+      );
+    }
+
+    let res: Response;
+    try {
+      res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': apiKey,
+          'content-type': 'application/json',
+          accept: 'application/json',
+        },
+        signal: AbortSignal.timeout(15_000),
+        body: JSON.stringify({
+          sender: { name: 'Sollo', email: fromEmail },
+          to: [{ email: to }],
+          subject: 'Код подтверждения Sollo',
+          textContent: `Ваш код подтверждения: ${code}\n\nКод действует 10 минут. Если вы не запрашивали его — просто проигнорируйте это письмо.`,
+          htmlContent: this.otpHtml(code),
+        }),
+      });
+    } catch (err) {
+      this.logger.error(
+        `Brevo недоступен: ${err instanceof Error ? err.message : err}`,
+      );
+      throw new ServiceUnavailableException(
+        'Не удалось отправить код, попробуйте ещё раз',
+      );
+    }
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      this.logger.error(`Brevo ${res.status} для ${to}: ${body.slice(0, 300)}`);
+      throw new ServiceUnavailableException(
+        'Не удалось отправить код, попробуйте ещё раз',
+      );
+    }
+
+    this.logger.log(`Код отправлен на ${to} через Brevo`);
+    return {};
   }
 
   private otpHtml(code: string): string {
