@@ -141,12 +141,12 @@ export default function RewardsPage() {
               />
             ) : (
               <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange to-[#F97316] text-[18px] font-extrabold text-white">
-                D
+                S
               </span>
             )}
             <div>
               <p className="flex items-center gap-2 text-[19px] font-extrabold tracking-tight text-white">
-                District <Crown size={16} className="text-[#FBBF24]" />
+                Sollo <Crown size={16} className="text-[#FBBF24]" />
               </p>
               <p className="mt-0.5 text-[12.5px] text-white/60">{t("rewards.trader")} · {rankLabel}</p>
             </div>

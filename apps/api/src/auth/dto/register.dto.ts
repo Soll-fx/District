@@ -2,11 +2,11 @@ import { IsEmail, IsOptional, IsString, Matches, MinLength } from 'class-validat
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class RegisterDto {
-  @ApiProperty({ example: 'district@example.com' })
+  @ApiProperty({ example: 'sollo@example.com' })
   @IsEmail()
   email!: string;
 
-  @ApiPropertyOptional({ example: 'District' })
+  @ApiPropertyOptional({ example: 'Sollo' })
   @IsOptional()
   @IsString()
   @MinLength(2)

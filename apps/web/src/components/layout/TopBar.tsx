@@ -39,7 +39,7 @@ export function TopBar() {
               {(user?.name ?? "D")[0].toUpperCase()}
             </span>
           )}
-          <span className="text-[15px] font-extrabold tracking-tight text-text-1">{user?.name ?? "District"}</span>
+          <span className="text-[15px] font-extrabold tracking-tight text-text-1">{user?.name ?? "Sollo"}</span>
         </Link>
 
         <div className="flex items-center gap-2">

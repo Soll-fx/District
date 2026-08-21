@@ -22,7 +22,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Trading — журнал сделок и аналитика",
+  title: "Sollo — журнал сделок и аналитика",
   description:
     "Приватный трейдинг-дашборд: журнал сделок, аналитика, идеи, библиотека стратегий, академия и рейтинг.",
 };

@@ -39,7 +39,7 @@ export class RulesSnapshotDto {
 }
 
 export class CreateTournamentDto {
-  @ApiProperty({ example: 'Летний турнир District Cup' })
+  @ApiProperty({ example: 'Летний турнир Sollo Cup' })
   @IsString()
   @Length(3, 200)
   title!: string;

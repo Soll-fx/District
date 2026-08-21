@@ -239,8 +239,8 @@ export default function LoginPage() {
   };
 
   const fillDemo = () => {
-    setEmail("district@example.com");
-    setPassword("district123");
+    setEmail("sollo@example.com");
+    setPassword("sollo123");
     setError(null);
   };
 
@@ -443,7 +443,7 @@ export default function LoginPage() {
                           id="reg-promo"
                           name="promo"
                           type="text"
-                          placeholder="DISTRICT30"
+                          placeholder="SOLLO30"
                           value={promo}
                           onChange={(e) => setPromo(e.target.value.toUpperCase())}
                           autoComplete="off"
@@ -480,7 +480,7 @@ export default function LoginPage() {
                               onClick={fillDemo}
                               className="font-semibold text-text-2 transition-colors hover:text-text-1"
                             >
-                              district@example.com / district123
+                              sollo@example.com / sollo123
                             </button>
                           </p>
                         </div>
@@ -504,7 +504,7 @@ export default function LoginPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-hero/90 via-hero/45 to-transparent" />
             <div className="absolute inset-0 flex items-end p-8">
               <div>
-                <p className="text-[17px] font-extrabold leading-snug text-white">District</p>
+                <p className="text-[17px] font-extrabold leading-snug text-white">Sollo</p>
                 <p className="mt-1 text-[12.5px] leading-relaxed text-white/80">
                   {t(tab === "login" ? "login.panelLogin" : "login.panelRegister")}
                 </p>

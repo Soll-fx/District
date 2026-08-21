@@ -164,7 +164,7 @@ export default function AdminPromosPage() {
             <input
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="DISTRICT30"
+              placeholder="SOLLO30"
               className="field font-mono uppercase"
               autoFocus
               maxLength={32}

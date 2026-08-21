@@ -24,7 +24,7 @@ function detectInitialLang(): Lang {
     if (urlLang === "en" || urlLang === "ru") return urlLang;
     const stored = window.localStorage.getItem("locale");
     if (stored === "en" || stored === "ru") return stored;
-    const auth = JSON.parse(window.localStorage.getItem("district-auth") ?? "null");
+    const auth = JSON.parse(window.localStorage.getItem("sollo-auth") ?? "null");
     const userLocale = auth?.state?.user?.locale;
     if (userLocale === "en" || userLocale === "ru") return userLocale;
   } catch {

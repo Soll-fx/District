@@ -2,7 +2,7 @@ import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreatePromoDto {
-  @ApiProperty({ example: 'DISTRICT30' })
+  @ApiProperty({ example: 'SOLLO30' })
   @IsString()
   code!: string;
 

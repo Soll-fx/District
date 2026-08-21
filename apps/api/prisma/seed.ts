@@ -4,8 +4,8 @@ import * as bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = "district@example.com";
-  const passwordHash = await bcrypt.hash("district123", 10);
+  const email = "sollo@example.com";
+  const passwordHash = await bcrypt.hash("sollo123", 10);
 
   const user = await prisma.user.upsert({
     where: { email },
@@ -13,7 +13,7 @@ async function main() {
     create: {
       email,
       passwordHash,
-      name: "District",
+      name: "Sollo",
       role: "USER",
     },
   });
@@ -131,8 +131,8 @@ async function main() {
   });
 
   console.log("Seed готов. Вход:");
-  console.log("  email: district@example.com");
-  console.log("  пароль: district123");
+  console.log("  email: sollo@example.com");
+  console.log("  пароль: sollo123");
 }
 
 main()

@@ -35,7 +35,7 @@ export const useAuth = create<AuthState>()(
       logout: () => set({ token: null, user: null }),
     }),
     {
-      name: "district-auth",
+      name: "sollo-auth",
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => state?.setHydrated(),
     },
