@@ -253,9 +253,9 @@ export default function LoginPage() {
             initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={spring}
-            className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet to-teal text-[17px] font-extrabold text-white shadow-[0_0_30px_rgba(124,108,240,0.45)]"
+            className="mx-auto block h-11 w-11 overflow-hidden rounded-full shadow-[0_0_30px_rgba(124,108,240,0.45)]"
           >
-            D
+            <img src="/logo.jpeg" alt="" className="h-full w-full object-cover" />
           </motion.span>
 
           <div className="mx-auto mt-7 mb-8 flex w-full max-w-[300px] rounded-xl border border-white/10 bg-white/[0.03] p-1">
