@@ -9,6 +9,7 @@ import { cn, formatMoney } from "@/lib/utils";
 import { useLang } from "@/lib/i18n";
 import { useProfile } from "@/hooks/use-settings";
 import { useEquity, useTrades, useTradeStats } from "@/hooks/use-trades";
+import { SocialLinks } from "@/components/ui/social-links";
 
 const AVATAR_COLORS = ["#7C6CF0", "#22C55E", "#F59E0B", "#3B82F6", "#EC4899"];
 

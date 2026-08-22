@@ -25,6 +25,7 @@ import { useAdminUser, useAdminUsers, useBanUser, type AdminUserProfile } from "
 import { ideaDateLabel } from "@/lib/mappers";
 import { ccToFlag } from "@/lib/flag";
 import { cn, formatMoney } from "@/lib/utils";
+import { SocialLinks } from "@/components/ui/social-links";
 
 const AVATAR_COLORS = ["#7C6CF0", "#22C55E", "#F59E0B", "#3B82F6", "#EC4899"];
 
@@ -382,15 +383,14 @@ function ProfileCardBody({
       {(data.instagram || data.telegram || data.youtube || data.tradingview) && (
         <div>
           <div className="field-label mb-1.5">{t("admin.users.socials")}</div>
-          <div className="flex flex-wrap gap-1.5">
-            {(["instagram", "telegram", "youtube", "tradingview"] as const).map((k) =>
-              data[k] ? (
-                <span key={k} className="pill pill-neutral">
-                  <AtSign size={11} /> {data[k]}
-                </span>
-              ) : null,
-            )}
-          </div>
+          <SocialLinks
+            values={{
+              instagram: data.instagram,
+              telegram: data.telegram,
+              youtube: data.youtube,
+              tradingview: data.tradingview,
+            }}
+          />
         </div>
       )}
 
