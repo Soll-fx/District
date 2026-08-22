@@ -90,6 +90,9 @@ model User {
   pushNotif        Boolean  @default(true)
   ideaAlerts       Boolean  @default(true)
   weeklyDigest     Boolean  @default(false)
+  country          String?
+  banned           Boolean  @default(false)
+  bannedAt         DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

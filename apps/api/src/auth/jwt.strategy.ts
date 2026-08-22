@@ -35,9 +35,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     const user = await this.prisma.user.findUnique({
       where: { id: session.userId },
-      select: { id: true, email: true, role: true },
+      select: { id: true, email: true, role: true, banned: true },
     });
-    if (!user) return null;
+    if (!user || user.banned) return null;
 
     if (Date.now() - session.lastActiveAt.getTime() > LAST_ACTIVE_THROTTLE_MS) {
       void this.prisma.session

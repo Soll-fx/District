@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { AdminGuard } from '../common/guards/admin.guard';
@@ -20,5 +20,10 @@ export class UsersAdminController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.users.findOne(id);
+  }
+
+  @Patch(':id/ban')
+  setBan(@Param('id') id: string, @Body() body: { banned: boolean }) {
+    return this.users.setBan(id, body.banned === true);
   }
 }

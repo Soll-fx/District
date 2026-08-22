@@ -27,6 +27,8 @@ export class UsersAdminService {
       locale: u.locale,
       twoFactorEnabled: u.twoFactorEnabled,
       createdAt: u.createdAt,
+      banned: u.banned,
+      country: u.country,
       promoCode: u.promoRedemptions[0]?.promo.code ?? null,
       promoActivatedAt: u.promoRedemptions[0]?.createdAt ?? null,
       balance:
@@ -35,10 +37,14 @@ export class UsersAdminService {
   }
 
   async findOne(id: string) {
-    const u = await this.prisma.user.findUnique({
-      where: { id },
-      include: this.include,
-    });
+    const [u, tradeStats] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id }, include: this.include }),
+      this.prisma.trade.aggregate({
+        where: { userId: id },
+        _count: { _all: true },
+        _sum: { pnl: true },
+      }),
+    ]);
     if (!u) throw new NotFoundException('Пользователь не найден');
 
     return {
@@ -55,11 +61,37 @@ export class UsersAdminService {
       tradingview: u.tradingview,
       twoFactorEnabled: u.twoFactorEnabled,
       createdAt: u.createdAt,
+      banned: u.banned,
+      bannedAt: u.bannedAt,
+      country: u.country,
+      stats: {
+        tradesCount: tradeStats._count._all,
+        totalPnl: tradeStats._sum.pnl ?? 0,
+      },
       promos: u.promoRedemptions.map((r) => ({
         code: r.promo.code,
         activatedAt: r.createdAt,
       })),
       accounts: u.accounts ?? [],
     };
+  }
+
+  async setBan(id: string, banned: boolean) {
+    const existing = await this.prisma.user.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Пользователь не найден');
+
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: { banned, bannedAt: banned ? new Date() : null },
+    });
+
+    if (banned) {
+      await this.prisma.session.updateMany({
+        where: { userId: id, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    }
+
+    return { id: user.id, banned: user.banned };
   }
 }

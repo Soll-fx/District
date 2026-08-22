@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 export type AdminUserRow = {
@@ -15,6 +15,8 @@ export type AdminUserRow = {
   promoCode: string | null;
   promoActivatedAt: string | null;
   balance: number | null;
+  banned: boolean;
+  country: string | null;
 };
 
 export type AdminUserProfile = AdminUserRow & {
@@ -25,6 +27,7 @@ export type AdminUserProfile = AdminUserRow & {
   tradingview: string | null;
   promos: { code: string; activatedAt: string }[];
   accounts: { name: string; balance: number; currency: string }[];
+  stats: { tradesCount: number; totalPnl: number };
 };
 
 export function useAdminUsers() {
@@ -39,5 +42,19 @@ export function useAdminUser(id: string | null) {
     queryKey: ["admin", "users", id],
     queryFn: () => api.get<AdminUserProfile>(`/admin/users/${id}`),
     enabled: !!id,
+  });
+}
+
+export function useBanUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { id: string; banned: boolean }) =>
+      api.patch<{ id: string; banned: boolean }>(
+        `/admin/users/${input.id}/ban`,
+        { banned: input.banned },
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
   });
 }

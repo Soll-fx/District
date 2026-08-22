@@ -15,7 +15,13 @@ import { MailService } from '../mail/mail.service';
 export type LoginMeta = {
   userAgent?: string;
   ip?: string;
-  req?: { ip?: string; headers?: { 'x-forwarded-for'?: string | string[] } };
+  req?: {
+    ip?: string;
+    headers?: {
+      'x-forwarded-for'?: string | string[];
+      'x-vercel-ip-country'?: string;
+    };
+  };
 };
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -100,11 +106,15 @@ export class AuthService {
       throw new UnauthorizedException('Неверный код');
     }
 
+    const country =
+      meta.req?.headers?.['x-vercel-ip-country']?.toUpperCase() ?? null;
+
     const user = await this.prisma.user.create({
       data: {
         email: payload.email,
         passwordHash: payload.passwordHash,
         name: payload.name,
+        country,
       },
     });
 
@@ -127,6 +137,9 @@ export class AuthService {
     });
     if (!user) {
       throw new UnauthorizedException('Пользователь с таким email не найден');
+    }
+    if (user.banned) {
+      throw new UnauthorizedException('Аккаунт заблокирован');
     }
 
     const code = generateOtpCode();
@@ -151,6 +164,9 @@ export class AuthService {
     });
     if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
       throw new UnauthorizedException('Неверный email или пароль');
+    }
+    if (user.banned) {
+      throw new UnauthorizedException('Аккаунт заблокирован');
     }
 
     if (user.twoFactorEnabled) {

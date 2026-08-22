@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Ticket, Trash2, Check } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { AdminTabs } from "@/components/ui/admin-tabs";
 import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 import { EmptyState } from "@/components/ui/empty";
@@ -77,6 +78,8 @@ export default function AdminPromosPage() {
           </button>
         }
       />
+
+      <AdminTabs />
 
       {isLoading ? (
         <div className="grid gap-3">
