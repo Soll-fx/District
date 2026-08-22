@@ -210,12 +210,6 @@ export default function LoginPage() {
     setCode("");
   };
 
-  const fillDemo = () => {
-    setEmail("sollo@example.com");
-    setPassword("sollo123");
-    setError(null);
-  };
-
   const ErrorBox = error ? (
     <p className="rounded-xl bg-red-500/15 px-3.5 py-2.5 text-[12.5px] font-semibold text-red-400">{error}</p>
   ) : null;
@@ -266,7 +260,7 @@ export default function LoginPage() {
             D
           </motion.span>
 
-          <div className="mx-auto mt-7 mb-8 w-full max-w-[300px] rounded-xl border border-white/10 bg-white/[0.03] p-1">
+          <div className="mx-auto mt-7 mb-8 flex w-full max-w-[300px] rounded-xl border border-white/10 bg-white/[0.03] p-1">
             {(["login", "register"] as const).map((k) => {
               const active = tab === k;
               return (
@@ -432,25 +426,13 @@ export default function LoginPage() {
                   </SubmitButton>
 
                   {tab === "login" ? (
-                    <div className="space-y-2">
-                      <a
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
-                        className="block text-right text-[12px] font-semibold text-white/45 transition-colors hover:text-white"
-                      >
-                        {t("login.forgot")}
-                      </a>
-                      <p className="text-center text-[11.5px] text-white/35">
-                        {t("login.demoHint")}{" "}
-                        <button
-                          type="button"
-                          onClick={fillDemo}
-                          className="font-semibold text-white/70 underline-offset-2 transition-colors hover:text-white hover:underline"
-                        >
-                          sollo@example.com / sollo123
-                        </button>
-                      </p>
-                    </div>
+                    <a
+                      href="#"
+                      onClick={(e) => e.preventDefault()}
+                      className="block text-right text-[12px] font-semibold text-white/45 transition-colors hover:text-white"
+                    >
+                      {t("login.forgot")}
+                    </a>
                   ) : (
                     <p className="text-center text-[11.5px] text-white/35">{t("login.registerSubtitle")}</p>
                   )}
