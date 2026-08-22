@@ -377,6 +377,12 @@ body {
   display: none;
 }
 
+/* ── персонаж на странице входа: дыхание ── */
+@keyframes charBreathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
 /* ── reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

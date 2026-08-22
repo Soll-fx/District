@@ -16,7 +16,7 @@ import {
   Tag,
   UserPlus,
 } from "lucide-react";
-import { SplineScene } from "@/components/spline-scene";
+import { CharacterScene } from "@/components/character-scene";
 import { api } from "@/lib/api";
 import { useLang } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-store";
@@ -39,8 +39,6 @@ const PANEL = {
 };
 
 const spring = { type: "spring", stiffness: 420, damping: 34 } as const;
-
-const ROBOT_SCENE = "https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode";
 
 function pwScore(p: string) {
   let s = 0;
@@ -442,9 +440,9 @@ export default function LoginPage() {
           </AnimatePresence>
         </div>
 
-        {/* ── правая половина: живой робот ── */}
+        {/* ── правая половина: персонаж ── */}
         <div className="relative hidden min-h-[620px] lg:block">
-          <SplineScene scene={ROBOT_SCENE} className="absolute inset-0 h-full w-full" />
+          <CharacterScene />
         </div>
       </motion.div>
     </div>
