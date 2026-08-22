@@ -84,6 +84,7 @@ function RailLink({
       <Link
         href={href}
         aria-label={label}
+        title={label}
         className={cn(
           "flex h-9 w-9 items-center justify-center rounded-full border border-card-border bg-card text-text-2 shadow-card transition-all duration-200 hover:scale-110 hover:text-text-1",
           active && "ring-1 ring-violet/50 text-text-1",
@@ -123,6 +124,7 @@ export function Sidebar() {
           <Link
             href="/settings?tab=card"
             aria-label={t("settings.card")}
+            title={t("settings.card")}
             className="block"
           >
             {user?.avatarUrl ? (
@@ -160,6 +162,7 @@ export function Sidebar() {
           <button
             type="button"
             onClick={() => setLang(lang === "ru" ? "en" : "ru")}
+            title={lang === "ru" ? "English" : "Русский"}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-card-border bg-card text-[11px] font-bold text-text-2 shadow-card transition-all duration-200 hover:scale-110 hover:text-text-1"
             aria-label="Language"
           >
@@ -170,7 +173,7 @@ export function Sidebar() {
         <RailTip content={<TipLabel>{t("topbar.theme")}</TipLabel>}>
           <button
             type="button"
-            onClick={toggle}
+            title={t("topbar.theme")} onClick={toggle}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-card-border bg-card text-text-2 shadow-card transition-all duration-200 hover:scale-110 hover:text-text-1"
             aria-label={t("topbar.theme")}
           >
@@ -182,6 +185,7 @@ export function Sidebar() {
           <button
             type="button"
             onClick={handleLogout}
+            title={t("topbar.logout")}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-card-border bg-card text-text-2 shadow-card transition-all duration-200 hover:scale-110 hover:text-neg"
             aria-label={t("topbar.logout")}
           >

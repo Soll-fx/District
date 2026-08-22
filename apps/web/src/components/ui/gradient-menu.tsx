@@ -71,6 +71,7 @@ export function GradientMenu({ items }: { items: GradientMenuItem[] }) {
               <Link
                 href={item.href}
                 aria-label={item.label}
+                title={item.label}
                 onMouseEnter={() => setIndex(idx)}
                 className="relative flex h-11 w-11 items-center justify-center rounded-full"
               >
