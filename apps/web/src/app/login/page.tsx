@@ -463,13 +463,6 @@ export default function LoginPage() {
         {/* ── правая половина: живой робот ── */}
         <div className="relative hidden min-h-[620px] lg:block">
           <SplineScene scene={ROBOT_SCENE} className="absolute inset-0 h-full w-full" />
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/55 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-6 text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.07] px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-white/75 backdrop-blur-md">
-              <span className="live-dot h-1.5 w-1.5 rounded-full bg-pos" />
-              AI assistant
-            </span>
-          </div>
         </div>
       </motion.div>
     </div>

@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-namespace */
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 declare global {
@@ -12,6 +12,7 @@ declare global {
         url?: string;
         className?: string;
         style?: React.CSSProperties;
+        ref?: React.Ref<HTMLElement>;
       };
     }
   }
@@ -34,7 +35,30 @@ interface SplineSceneProps {
 }
 
 export function SplineScene({ scene, className }: SplineSceneProps) {
+  const ref = useRef<HTMLElement>(null);
+
   useEffect(loadViewer, []);
+
+  // прячем логотип-ссылку Spline внутри shadow DOM
+  useEffect(() => {
+    let tries = 0;
+    const iv = setInterval(() => {
+      tries += 1;
+      const el = ref.current;
+      const logo = (el?.shadowRoot as ShadowRoot | null)?.querySelector("#logo");
+      if (el?.shadowRoot) {
+        if (!logo) {
+          const st = document.createElement("style");
+          st.textContent = "#logo,#logo-link,.spline-logo{display:none!important}";
+          el.shadowRoot.appendChild(st);
+        } else {
+          (logo as HTMLElement).style.display = "none";
+        }
+      }
+      if (logo || tries > 50) clearInterval(iv);
+    }, 300);
+    return () => clearInterval(iv);
+  }, []);
 
   return (
     <div className={cn("relative overflow-hidden", className)}>
@@ -42,6 +66,7 @@ export function SplineScene({ scene, className }: SplineSceneProps) {
         <span className="h-8 w-8 animate-pulse rounded-full bg-white/20" />
       </div>
       <spline-viewer
+        ref={ref}
         url={scene}
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
       />
