@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { TradesService } from '../trades/trades.service';
 
 @Injectable()
 export class UsersAdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly trades: TradesService,
+  ) {}
 
   private readonly include = {
     promoRedemptions: {
@@ -37,15 +41,28 @@ export class UsersAdminService {
   }
 
   async findOne(id: string) {
-    const [u, tradeStats] = await Promise.all([
+    const [u, stats, equity, tradesRaw] = await Promise.all([
       this.prisma.user.findUnique({ where: { id }, include: this.include }),
-      this.prisma.trade.aggregate({
-        where: { userId: id },
-        _count: { _all: true },
-        _sum: { pnl: true },
+      this.trades.stats(id),
+      this.trades.equityCurve(id, 365),
+      this.prisma.trade.findMany({
+        where: { userId: id, deletedAt: null },
+        select: { asset: true, pnl: true },
       }),
     ]);
     if (!u) throw new NotFoundException('Пользователь не найден');
+
+    const assetMap = new Map<string, { count: number; pnl: number }>();
+    for (const t of tradesRaw) {
+      const cur = assetMap.get(t.asset) ?? { count: 0, pnl: 0 };
+      cur.count += 1;
+      cur.pnl += t.pnl;
+      assetMap.set(t.asset, cur);
+    }
+    const topAssets = Array.from(assetMap.entries())
+      .map(([asset, v]) => ({ asset, ...v }))
+      .sort((a, b) => b.count - a.count || b.pnl - a.pnl)
+      .slice(0, 5);
 
     return {
       id: u.id,
@@ -64,15 +81,14 @@ export class UsersAdminService {
       banned: u.banned,
       bannedAt: u.bannedAt,
       country: u.country,
-      stats: {
-        tradesCount: tradeStats._count._all,
-        totalPnl: tradeStats._sum.pnl ?? 0,
-      },
       promos: u.promoRedemptions.map((r) => ({
         code: r.promo.code,
         activatedAt: r.createdAt,
       })),
       accounts: u.accounts ?? [],
+      stats,
+      equityPoints: equity.points,
+      topAssets,
     };
   }
 

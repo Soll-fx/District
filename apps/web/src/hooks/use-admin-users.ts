@@ -27,7 +27,22 @@ export type AdminUserProfile = AdminUserRow & {
   tradingview: string | null;
   promos: { code: string; activatedAt: string }[];
   accounts: { name: string; balance: number; currency: string }[];
-  stats: { tradesCount: number; totalPnl: number };
+  stats: {
+    totalPnl: number;
+    winRate: number;
+    avgR: number;
+    count: number;
+    wins: number;
+    losses: number;
+    profitFactor: number;
+    avgWin: number;
+    avgLoss: number;
+    maxDrawdown: number;
+    longCount: number;
+    shortCount: number;
+  };
+  equityPoints: { date: string; balance: number }[];
+  topAssets: { asset: string; count: number; pnl: number }[];
 };
 
 export function useAdminUsers() {
