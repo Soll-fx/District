@@ -294,6 +294,93 @@ function CyberBackdrop() {
   );
 }
 
+const TICKER_IDS = [
+  { id: "bitcoin", sym: "BTC/USDT" },
+  { id: "ethereum", sym: "ETH/USDT" },
+  { id: "solana", sym: "SOL/USDT" },
+] as const;
+
+type TickRow = { p: number; ch: number };
+
+function fmtPrice(p: number) {
+  return p >= 1000
+    ? p.toLocaleString("en-US", { maximumFractionDigits: 0 })
+    : p.toFixed(2);
+}
+
+function PriceTicker() {
+  const [rows, setRows] = useState<Record<string, TickRow>>({});
+  const [flash, setFlash] = useState<Record<string, "up" | "down">>({});
+  const prev = useRef<Record<string, number>>({});
+
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      try {
+        const r = await fetch(
+          "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true"
+        );
+        if (!r.ok) return;
+        const d: Record<string, { usd?: number; usd_24h_change?: number }> = await r.json();
+        if (!alive) return;
+        const nf: Record<string, "up" | "down"> = {};
+        const nr: Record<string, TickRow> = {};
+        for (const { id } of TICKER_IDS) {
+          const usd = d[id]?.usd;
+          if (typeof usd !== "number") continue;
+          const old = prev.current[id];
+          if (old != null && old !== usd) nf[id] = usd > old ? "up" : "down";
+          prev.current[id] = usd;
+          nr[id] = { p: usd, ch: d[id]?.usd_24h_change ?? 0 };
+        }
+        setRows(nr);
+        setFlash(nf);
+      } catch {
+        /* сеть недоступна — показываем прочерки */
+      }
+    };
+    load();
+    const iv = setInterval(load, 30_000);
+    return () => {
+      alive = false;
+      clearInterval(iv);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!Object.keys(flash).length) return;
+    const t = setTimeout(() => setFlash({}), 700);
+    return () => clearTimeout(t);
+  }, [flash]);
+
+  return (
+    <div className="mx-auto mt-6 w-fit space-y-1 text-left font-mono text-[11px]">
+      {TICKER_IDS.map(({ id, sym }) => {
+        const r = rows[id];
+        const f = flash[id];
+        return (
+          <p
+            key={sym}
+            className={cn(
+              "flex items-center gap-2.5 transition-colors duration-500",
+              f === "up" ? "text-pos" : f === "down" ? "text-neg" : "text-white/45"
+            )}
+          >
+            <span className="text-[10px] text-white/25">{sym}</span>
+            <span className="num tabular-nums">{r ? fmtPrice(r.p) : "······"}</span>
+            {r && (
+              <span className={cn("text-[10px]", r.ch >= 0 ? "text-pos/60" : "text-neg/60")}>
+                {r.ch >= 0 ? "+" : ""}
+                {r.ch.toFixed(1)}%
+              </span>
+            )}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const setSession = useAuth((s) => s.setSession);
@@ -751,6 +838,8 @@ export default function LoginPage() {
                       <span className="text-orange">▲</span>&nbsp;&nbsp;latency ........... 23ms
                     </p>
                   </div>
+
+                  <PriceTicker />
 
                   <p className="mx-auto mt-8 max-w-[300px] text-[12.5px] leading-relaxed text-white/55">
                     {t(tab === "login" ? "login.panelLogin" : "login.panelRegister")}
