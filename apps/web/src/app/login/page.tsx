@@ -445,7 +445,6 @@ export default function LoginPage() {
         {/* ── правая половина: живой робот ── */}
         <div className="relative hidden min-h-[620px] lg:block">
           <SplineScene scene={ROBOT_SCENE} className="absolute inset-0 h-full w-full" />
-          <div aria-hidden className="pointer-events-none absolute bottom-2.5 right-2.5 z-10 h-9 w-24 rounded-lg bg-[#0B0B10]" />
         </div>
       </motion.div>
     </div>
