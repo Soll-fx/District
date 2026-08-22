@@ -1,0 +1,43 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+
+export type AdminUserRow = {
+  id: string;
+  email: string;
+  name: string;
+  avatarUrl: string | null;
+  role: "USER" | "ADMIN";
+  locale: string;
+  twoFactorEnabled: boolean;
+  createdAt: string;
+  promoCode: string | null;
+  promoActivatedAt: string | null;
+  balance: number | null;
+};
+
+export type AdminUserProfile = AdminUserRow & {
+  timezone: string;
+  instagram: string | null;
+  telegram: string | null;
+  youtube: string | null;
+  tradingview: string | null;
+  promos: { code: string; activatedAt: string }[];
+  accounts: { name: string; balance: number; currency: string }[];
+};
+
+export function useAdminUsers() {
+  return useQuery({
+    queryKey: ["admin", "users"],
+    queryFn: () => api.get<AdminUserRow[]>("/admin/users"),
+  });
+}
+
+export function useAdminUser(id: string | null) {
+  return useQuery({
+    queryKey: ["admin", "users", id],
+    queryFn: () => api.get<AdminUserProfile>(`/admin/users/${id}`),
+    enabled: !!id,
+  });
+}

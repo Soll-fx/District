@@ -19,6 +19,7 @@ import {
   Sun,
   Moon,
   ShieldHalf,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import { GradientMenu, type GradientMenuItem } from "@/components/ui/gradient-menu";
@@ -149,13 +150,23 @@ export function Sidebar() {
         <div className="h-px w-8 bg-card-border" />
 
         {isAdmin && (
-          <RailLink
-            href="/admin/promos"
-            label={t("admin.title")}
-            active={pathname.startsWith("/admin")}
-          >
-            <ShieldHalf size={16} strokeWidth={pathname.startsWith("/admin") ? 2.2 : 1.8} />
-          </RailLink>
+          <>
+            <RailLink
+              href="/admin/users"
+              label={t("admin.users")}
+              active={pathname.startsWith("/admin/users")}
+            >
+              <UsersRound size={16} strokeWidth={pathname.startsWith("/admin/users") ? 2.2 : 1.8} />
+            </RailLink>
+
+            <RailLink
+              href="/admin/promos"
+              label={t("admin.promos")}
+              active={pathname === "/admin/promos"}
+            >
+              <ShieldHalf size={16} strokeWidth={pathname === "/admin/promos" ? 2.2 : 1.8} />
+            </RailLink>
+          </>
         )}
 
         <RailTip content={<TipLabel>{lang === "ru" ? "English" : "Русский"}</TipLabel>}>
