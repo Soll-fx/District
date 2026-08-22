@@ -253,7 +253,7 @@ function SkipHint() {
   );
 }
 
-function CyberBackdrop() {
+function CyberBackdrop({ light }: { light: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const rafRef = useRef(0);
 
@@ -275,7 +275,11 @@ function CyberBackdrop() {
   }, []);
 
   return (
-    <div ref={ref} aria-hidden className="cp-scene fixed inset-0 overflow-hidden bg-[#05060A]">
+    <div
+      ref={ref}
+      aria-hidden
+      className={cn("cp-scene fixed inset-0 overflow-hidden", light ? "cp-light" : "bg-[#05060A]")}
+    >
       <div
         className="absolute inset-0"
         style={{
@@ -292,6 +296,41 @@ function CyberBackdrop() {
       <div className="cp-sweep" />
     </div>
   );
+}
+
+const TV_SYMBOLS = [
+  { proName: "BITSTAMP:BTCUSD", title: "BTC/USD" },
+  { proName: "BITSTAMP:ETHUSD", title: "ETH/USD" },
+  { proName: "OANDA:XAUUSD", title: "Gold" },
+  { proName: "SP:SPX", title: "S&P 500" },
+  { proName: "NASDAQ:NDX", title: "Nasdaq 100" },
+  { proName: "TVC:DXY", title: "DXY" },
+  { proName: "OANDA:EURUSD", title: "EUR/USD" },
+  { proName: "FX_IDC:USDRUB", title: "USD/RUB" },
+];
+
+function TvTicker({ colorTheme }: { colorTheme: "light" | "dark" }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.innerHTML = "";
+    const s = document.createElement("script");
+    s.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
+    s.async = true;
+    s.innerHTML = JSON.stringify({
+      symbols: TV_SYMBOLS,
+      showSymbolLogo: true,
+      isTransparent: true,
+      displayMode: "adaptive",
+      colorTheme,
+      locale: "ru",
+    });
+    el.appendChild(s);
+  }, [colorTheme]);
+
+  return <div ref={ref} className="h-[46px] w-full overflow-hidden" />;
 }
 
 export default function LoginPage() {
@@ -319,6 +358,7 @@ export default function LoginPage() {
 
   const [booted, setBooted] = useState(true);
   const [granted, setGranted] = useState(false);
+  const [scene, setScene] = useState<"light" | "dark">("dark");
 
   const cardRef = useRef<HTMLDivElement>(null);
   const tiltRaf = useRef(0);
@@ -327,6 +367,18 @@ export default function LoginPage() {
     if (sessionStorage.getItem(BOOT_KEY) === "1") return;
     const id = requestAnimationFrame(() => setBooted(false));
     return () => cancelAnimationFrame(id);
+  }, []);
+
+  useEffect(() => {
+    const apply = () =>
+      setScene(document.documentElement.dataset.theme === "light" ? "light" : "dark");
+    const id = requestAnimationFrame(apply);
+    const mo = new MutationObserver(apply);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => {
+      cancelAnimationFrame(id);
+      mo.disconnect();
+    };
   }, []);
 
   const finishBoot = useCallback(() => {
@@ -446,7 +498,12 @@ export default function LoginPage() {
   ) : null;
 
   return (
-    <div data-theme="dark" className="relative min-h-dvh overflow-hidden bg-[#05060A]">
+    <div
+      className={cn(
+        "relative min-h-dvh overflow-hidden",
+        scene === "light" ? "bg-[#F6F7FB]" : "bg-[#05060A]"
+      )}
+    >
       <AnimatePresence>{!booted && <BootOverlay key="boot" onDone={finishBoot} />}</AnimatePresence>
 
       <AnimatePresence>
@@ -470,9 +527,13 @@ export default function LoginPage() {
         )}
       </AnimatePresence>
 
-      <CyberBackdrop />
+      <CyberBackdrop light={scene === "light"} />
 
-      <div className="relative z-10 flex min-h-dvh items-center justify-center px-4 py-10">
+      <div className="fixed inset-x-0 top-0 z-30 border-b border-card-border bg-card/70 backdrop-blur-md">
+        <TvTicker colorTheme={scene} />
+      </div>
+
+      <div className="relative z-10 flex min-h-dvh items-center justify-center px-4 pb-10 pt-[72px]">
         <motion.div
           ref={cardRef}
           onMouseMove={onCardMove}

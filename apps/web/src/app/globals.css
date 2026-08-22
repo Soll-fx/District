@@ -499,6 +499,24 @@ body {
   animation: pulseDot 1s steps(1) infinite;
 }
 
+/* ── светлая вариация кибер-сцены ── */
+.cp-light .cp-orb-a { background: radial-gradient(circle, rgba(124, 108, 240, 0.17), transparent 65%); }
+.cp-light .cp-orb-b { background: radial-gradient(circle, rgba(20, 184, 166, 0.14), transparent 65%); }
+.cp-light .cp-orb-c { background: radial-gradient(circle, rgba(234, 81, 255, 0.11), transparent 65%); }
+.cp-light .cp-grid {
+  opacity: 0.5;
+  background-image:
+    linear-gradient(rgba(124, 108, 240, 0.32) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 184, 166, 0.24) 1px, transparent 1px);
+}
+.cp-light .cp-vignette {
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(15, 20, 30, 0.10) 100%);
+}
+.cp-light .cp-scan { display: none; }
+.cp-light .cp-sweep::before {
+  background: linear-gradient(transparent, rgba(124, 108, 240, 0.05), transparent);
+}
+
 /* ── reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
