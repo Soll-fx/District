@@ -49,7 +49,7 @@ export function CharacterScene({ className }: { className?: string }) {
           playsInline
           disablePictureInPicture
           controls={false}
-          className="h-full w-full object-contain"
+          className="h-full w-full object-cover"
         />
       </div>
     </div>

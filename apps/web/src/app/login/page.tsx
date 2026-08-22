@@ -245,10 +245,10 @@ export default function LoginPage() {
         initial={{ opacity: 0, y: 18, scale: 0.985 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.45, ease: "easeOut" }}
-        className="relative z-10 mx-auto grid w-full max-w-[1060px] overflow-hidden rounded-[28px] bg-[#0B0B10] shadow-[0_40px_100px_rgba(15,20,43,0.35)] lg:grid-cols-2"
+        className="relative z-10 mx-auto flex w-full max-w-[1060px] flex-col overflow-hidden rounded-[28px] bg-[#0B0B10] shadow-[0_40px_100px_rgba(15,20,43,0.35)] lg:flex-row"
       >
         {/* ── левая половина: форма ── */}
-        <div className="relative w-full px-6 py-10 sm:px-12 sm:py-12">
+        <div className="relative w-full px-6 py-10 sm:px-12 sm:py-12 lg:flex-1">
           <motion.span
             initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -441,7 +441,10 @@ export default function LoginPage() {
         </div>
 
         {/* ── правая половина: персонаж ── */}
-        <div className="relative hidden min-h-[620px] lg:block">
+        <div
+          className="relative hidden shrink-0 self-stretch lg:block"
+          style={{ aspectRatio: "9 / 16", minHeight: 620 }}
+        >
           <CharacterScene />
         </div>
       </motion.div>
