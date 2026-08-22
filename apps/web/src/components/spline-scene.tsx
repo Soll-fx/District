@@ -45,17 +45,21 @@ export function SplineScene({ scene, className }: SplineSceneProps) {
     const iv = setInterval(() => {
       tries += 1;
       const el = ref.current;
-      const logo = (el?.shadowRoot as ShadowRoot | null)?.querySelector("#logo");
-      if (el?.shadowRoot) {
-        if (!logo) {
-          const st = document.createElement("style");
-          st.textContent = "#logo,#logo-link,.spline-logo{display:none!important}";
-          el.shadowRoot.appendChild(st);
-        } else {
-          (logo as HTMLElement).style.display = "none";
-        }
+      const sr = el?.shadowRoot;
+      if (sr) {
+        const kill = document.createElement("style");
+        kill.textContent =
+          '#logo,#logo-link,.spline-logo,a[href*="spline.design"]{display:none!important}';
+        sr.appendChild(kill);
+        sr.querySelectorAll("a").forEach((a) => {
+          if ((a as HTMLAnchorElement).href.includes("spline.design")) {
+            (a as HTMLElement).style.display = "none";
+          }
+        });
+        const logo = sr.querySelector("#logo");
+        if (!logo && !sr.querySelector('a[href*="spline.design"]')) clearInterval(iv);
       }
-      if (logo || tries > 50) clearInterval(iv);
+      if (tries > 60) clearInterval(iv);
     }, 300);
     return () => clearInterval(iv);
   }, []);
