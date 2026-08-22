@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 // координаты центра головы в % от размера картинки (посчитаны по пикселям)
-const HEAD = { x: 54.6, y: 12.2 };
+const HEAD = { x: 53.5, y: 19.5, rx: 38, ry: 22 };
 
 export function CharacterScene({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -47,24 +47,23 @@ export function CharacterScene({ className }: { className?: string }) {
           draggable={false}
           className="absolute inset-0 h-full w-full select-none object-contain"
           style={{
-            transform: "translate3d(calc(var(--hx, 0) * -9px), calc(var(--hy, 0) * -7px), 0)",
-            transition: "transform 0.28s ease-out",
+            transform: "translate3d(calc(var(--hx, 0) * -7px), calc(var(--hy, 0) * -6px), 0)",
+            transition: "transform 0.3s ease-out",
           }}
         />
-        {/* слой головы: следует за курсором */}
+        {/* слой головы: мягкая маска, следует за курсором */}
         <img
           src="/character.png"
           alt=""
           draggable={false}
           className="absolute inset-0 h-full w-full select-none object-contain"
           style={{
-            clipPath: `ellipse(17% 12.5% at ${HEAD.x}% ${HEAD.y}%)`,
-            WebkitClipPath: `ellipse(17% 12.5% at ${HEAD.x}% ${HEAD.y}%)`,
-            transformOrigin: `${HEAD.x}% ${HEAD.y + 5}%`,
+            WebkitMaskImage: `radial-gradient(ellipse ${HEAD.rx}% ${HEAD.ry}% at ${HEAD.x}% ${HEAD.y}%, black 52%, transparent 76%)`,
+            maskImage: `radial-gradient(ellipse ${HEAD.rx}% ${HEAD.ry}% at ${HEAD.x}% ${HEAD.y}%, black 52%, transparent 76%)`,
+            transformOrigin: `${HEAD.x}% ${HEAD.y + 14}%`,
             transform:
-              "translate3d(calc(var(--hx, 0) * 15px), calc(var(--hy, 0) * 11px), 0) rotate(calc(var(--hx, 0) * 2.5deg))",
-            transition: "transform 0.24s ease-out",
-            filter: "drop-shadow(0 0 26px rgba(124,108,240,0.28))",
+              "translate3d(calc(var(--hx, 0) * 11px), calc(var(--hy, 0) * 9px), 0) scale(1.02)",
+            transition: "transform 0.26s ease-out",
           }}
         />
       </div>
