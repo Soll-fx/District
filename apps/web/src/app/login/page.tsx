@@ -40,7 +40,7 @@ const PANEL = {
 
 const spring = { type: "spring", stiffness: 420, damping: 34 } as const;
 
-const ROBOT_SCENE = "https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode";
+const ROBOT_SCENE = "https://prod.spline.design/KFonZGtsoUXP-qx7/scene.splinecode";
 
 function pwScore(p: string) {
   let s = 0;
