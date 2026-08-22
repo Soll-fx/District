@@ -215,7 +215,7 @@ export default function LoginPage() {
   ) : null;
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-[#F5F6FA] px-4 py-8 sm:py-12">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#F5F6FA] px-4 py-8 sm:py-12">
       {/* мягкие пятна на белом фоне */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-violet/15 blur-[110px]" />
