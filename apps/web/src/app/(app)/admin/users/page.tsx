@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Search,
   Users as UsersIcon,
-  Globe,
   CalendarDays,
-  AtSign,
   Wallet,
   Ban,
   Check,
@@ -57,19 +55,20 @@ export default function AdminUsersPage() {
   const [confirmBan, setConfirmBan] = useState(false);
   const profile = useAdminUser(openId);
 
-  if (!isAdmin) return null;
+  let filtered = users ?? [];
+  {
+    const needle = q.trim().toLowerCase();
+    if (needle) {
+      filtered = filtered.filter(
+        (u) =>
+          u.name?.toLowerCase().includes(needle) ||
+          u.email.toLowerCase().includes(needle) ||
+          u.promoCode?.toLowerCase().includes(needle),
+      );
+    }
+  }
 
-  const filtered = useMemo(() => {
-    if (!users) return [];
-    const s = q.trim().toLowerCase();
-    if (!s) return users;
-    return users.filter(
-      (u) =>
-        u.name?.toLowerCase().includes(s) ||
-        u.email.toLowerCase().includes(s) ||
-        u.promoCode?.toLowerCase().includes(s),
-    );
-  }, [users, q]);
+  if (!isAdmin) return null;
 
   const closeCard = () => {
     setOpenId(null);
