@@ -14,6 +14,7 @@ declare global {
         setBackgroundColor?: (c: string) => void;
         colorScheme: "light" | "dark";
         viewportStableHeight?: number;
+        initData?: string;
       };
     };
   }

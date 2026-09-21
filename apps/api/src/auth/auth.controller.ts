@@ -50,6 +50,11 @@ export class AuthController {
     });
   }
 
+  @Post('telegram')
+  telegramLogin(@Body('initData') initData: string, @Request() req) {
+    return this.auth.telegramLogin(initData, { req });
+  }
+
   @Post('login')
   @ApiOperation({ summary: 'Вход по email и паролю' })
   login(@Body() dto: LoginDto, @Request() req) {

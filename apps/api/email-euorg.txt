@@ -1,0 +1,21 @@
+From: Solomon Ikigai (solomon.ikigai@gmail.com)
+To: hostmaster@eu.org
+Subject: Status / update of pending request 20260821172553-arf-25139 (sollo.eu.org)
+
+Hello,
+
+I submitted a request on 21 Aug 2026 for the domain sollo.eu.org under
+handle SD4126-FREE (request ID 20260821172553-arf-25139). It has been
+pending for over three weeks, so I wanted to kindly ask about its status.
+
+If there is anything blocking approval, please update the request to
+delegate the domain to these two nameservers (they already pass SOA/NS
+checks for sollo.eu.org):
+
+  ns1.vercel-dns.com
+  ns2.vercel-dns.com
+
+Please let me know if you need anything else from me (e.g. re-verification).
+
+Thank you,
+Solomon Ikigai

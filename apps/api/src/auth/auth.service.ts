@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { randomBytes } from 'crypto';
+import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
@@ -156,6 +156,79 @@ export class AuthService {
       { expiresIn: '5m' },
     );
     return { requiresTwoFactor: true, twoFactorToken: token, devCode };
+  }
+
+
+  async telegramLogin(initData: string, meta: LoginMeta = {}) {
+    const botToken = process.env.BOT_TOKEN ?? '8618066024:AAE6HNjljCUHpqtnbxZmNz8L6ZtA0fixXIk';
+
+    const params = new URLSearchParams(initData);
+    const hash = params.get('hash');
+    const authDate = Number(params.get('auth_date') ?? 0);
+    if (!hash || !authDate) throw new UnauthorizedException('Неверные данные Telegram');
+    if (Date.now() / 1000 - authDate > 48 * 60 * 60) {
+      throw new UnauthorizedException('Данные устарели');
+    }
+    params.delete('hash');
+
+    const dataCheck = [...params.entries()]
+      .map(([k, v]) => `${k}=${v}`)
+      .sort()
+      .join('\n');
+    const secretKey = createHmac('sha256', 'WebAppData').update(botToken).digest();
+    const calcHash = createHmac('sha256', secretKey).update(dataCheck).digest('hex');
+
+    const expected = new Uint8Array(Buffer.from(calcHash, 'hex'));
+    const provided = new Uint8Array(Buffer.from(hash, 'hex'));
+    if (
+      expected.length !== provided.length ||
+      !timingSafeEqual(expected, provided)
+    ) {
+      throw new UnauthorizedException('Неверные данные Telegram');
+    }
+
+    const userStr = params.get('user');
+    if (!userStr) throw new UnauthorizedException();
+    let tgUser: {
+      id: string;
+      first_name?: string;
+      last_name?: string;
+      username?: string;
+      photo_url?: string;
+    };
+    try {
+      tgUser = JSON.parse(userStr);
+    } catch {
+      throw new UnauthorizedException();
+    }
+    if (!tgUser?.id) throw new UnauthorizedException();
+
+    const name =
+      [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ').trim() ||
+      tgUser.username ||
+      'Telegram user';
+
+    const user = await this.prisma.user.upsert({
+      where: { telegramId: String(tgUser.id) },
+      create: {
+        telegramId: String(tgUser.id),
+        telegramUsername: tgUser.username ?? null,
+        telegramPhoto: tgUser.photo_url ?? null,
+        name,
+        email: `tg_${tgUser.id}@telegram.user`,
+        passwordHash: randomBytes(32).toString('hex'),
+      },
+      update: {
+        telegramUsername: tgUser.username ?? undefined,
+        telegramPhoto: tgUser.photo_url ?? undefined,
+      },
+    });
+
+    if (user.banned) {
+      throw new UnauthorizedException('Аккаунт заблокирован');
+    }
+
+    return this.createSession(user, meta);
   }
 
   async login(dto: LoginDto, meta: LoginMeta = {}) {
