@@ -597,7 +597,9 @@ function SettingsInner() {
                     ? t("settings.darkThemeOff")
                     : theme === "neumorph"
                       ? "Soft UI"
-                      : t("settings.darkThemeOn")}
+                      : theme === "softDark"
+                        ? "Soft UI Dark"
+                        : t("settings.darkThemeOn")}
                 </p>
               </div>
               <SwitchToggleThemeDemo />

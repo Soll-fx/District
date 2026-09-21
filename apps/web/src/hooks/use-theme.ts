@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type AppTheme = "light" | "dark" | "neumorph";
+export type AppTheme = "light" | "dark" | "neumorph" | "softDark";
 
-export const THEMES: AppTheme[] = ["light", "dark", "neumorph"];
+export const THEMES: AppTheme[] = ["light", "dark", "neumorph", "softDark"];
 
 const STORAGE_KEY = "theme";
 

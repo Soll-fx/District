@@ -1,6 +1,6 @@
 "use client";
 
-import { SunIcon, MoonIcon, Sparkles } from "lucide-react";
+import { SunIcon, MoonIcon, MoonStar, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { THEMES, useTheme, type AppTheme } from "@/hooks/use-theme";
 
@@ -8,6 +8,7 @@ const OPTIONS: { key: AppTheme; icon: typeof SunIcon; label: string }[] = [
   { key: "light", icon: SunIcon, label: "Light" },
   { key: "dark", icon: MoonIcon, label: "Dark" },
   { key: "neumorph", icon: Sparkles, label: "Soft" },
+  { key: "softDark", icon: MoonStar, label: "Soft Dark" },
 ];
 
 const SwitchToggleThemeDemo = () => {
