@@ -6,9 +6,27 @@ import { useAuth, type AuthUser } from "@/lib/auth-store";
 import type { DeviceSession, Profile } from "@/lib/types";
 
 export function useProfile() {
+  const user = useAuth((s) => s.user);
   return useQuery({
     queryKey: ["settings", "profile"],
     queryFn: () => api.get<Profile>("/auth/me"),
+    initialData: user
+      ? ({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          avatarUrl: user.avatarUrl,
+          role: user.role ?? "USER",
+          twoFactorEnabled: false,
+          locale: user.locale,
+          timezone: user.timezone,
+          instagram: user.instagram,
+          telegram: user.telegram,
+          youtube: user.youtube,
+          tradingview: user.tradingview,
+          createdAt: "",
+        } satisfies Profile)
+      : undefined,
   });
 }
 
