@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans, JetBrains_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
+import { TelegramBridge } from "@/components/telegram-bridge";
 
 const manrope = Manrope({
   subsets: ["latin", "cyrillic"],
@@ -47,9 +48,13 @@ export default function RootLayout({
             __html: `try{if(localStorage.getItem('theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}`,
           }}
         />
+        <script src="https://telegram.org/js/telegram-web-app.js" async />
       </head>
       <body className="min-h-full bg-bg text-text-1">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <TelegramBridge />
+        </Providers>
       </body>
     </html>
   );
