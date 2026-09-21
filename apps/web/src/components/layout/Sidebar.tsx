@@ -18,6 +18,7 @@ import {
   LogOut,
   Sun,
   Moon,
+  Sparkles,
   ShieldHalf,
   type LucideIcon,
 } from "lucide-react";
@@ -177,7 +178,7 @@ export function Sidebar() {
             className="flex h-9 w-9 items-center justify-center rounded-full border border-card-border bg-card text-text-2 shadow-card transition-all duration-200 hover:scale-110 hover:text-text-1"
             aria-label={t("topbar.theme")}
           >
-            {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+            {theme === "light" ? <Sun size={16} /> : theme === "neumorph" ? <Sparkles size={16} /> : <Moon size={16} />}
           </button>
         </RailTip>
 

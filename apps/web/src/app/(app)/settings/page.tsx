@@ -593,7 +593,11 @@ function SettingsInner() {
               <div>
                 <p className="text-[13.5px] font-extrabold text-text-1">{t("settings.darkTheme")}</p>
                 <p className="mt-0.5 text-[12px] text-text-2">
-                  {theme === "dark" ? t("settings.darkThemeOn") : t("settings.darkThemeOff")}
+                  {theme === "light"
+                    ? t("settings.darkThemeOff")
+                    : theme === "neumorph"
+                      ? "Soft UI"
+                      : t("settings.darkThemeOn")}
                 </p>
               </div>
               <SwitchToggleThemeDemo />

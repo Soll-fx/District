@@ -1,49 +1,37 @@
 "use client";
 
-import { useId } from "react";
-import { Switch } from "@/components/ui/switch";
+import { SunIcon, MoonIcon, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MoonIcon, SunIcon } from "lucide-react";
-import { useTheme } from "@/hooks/use-theme";
+import { THEMES, useTheme, type AppTheme } from "@/hooks/use-theme";
+
+const OPTIONS: { key: AppTheme; icon: typeof SunIcon; label: string }[] = [
+  { key: "light", icon: SunIcon, label: "Light" },
+  { key: "dark", icon: MoonIcon, label: "Dark" },
+  { key: "neumorph", icon: Sparkles, label: "Soft" },
+];
 
 const SwitchToggleThemeDemo = () => {
-  const id = useId();
-  const { theme, toggle } = useTheme();
-  const isDark = theme === "dark";
+  const { theme, setTheme } = useTheme();
 
   return (
-    <div className="group inline-flex items-center gap-2">
-      <span
-        id={`${id}-light`}
-        className={cn(
-          "cursor-pointer text-left text-sm font-medium",
-          isDark && "text-foreground/50",
-        )}
-        aria-controls={id}
-        onClick={() => isDark && toggle()}
-      >
-        <SunIcon className="size-4" aria-hidden="true" />
-      </span>
-
-      <Switch
-        id={id}
-        checked={isDark}
-        onCheckedChange={() => toggle()}
-        aria-labelledby={`${id}-light ${id}-dark`}
-        aria-label="Toggle between dark and light mode"
-      />
-
-      <span
-        id={`${id}-dark`}
-        className={cn(
-          "cursor-pointer text-right text-sm font-medium",
-          isDark || "text-foreground/50",
-        )}
-        aria-controls={id}
-        onClick={() => !isDark && toggle()}
-      >
-        <MoonIcon className="size-4" aria-hidden="true" />
-      </span>
+    <div className="pill-control" role="radiogroup" aria-label="Theme">
+      {OPTIONS.map(({ key, icon: Icon, label }) => (
+        <button
+          key={key}
+          type="button"
+          role="radio"
+          aria-checked={theme === key}
+          title={label}
+          onClick={() => setTheme(key)}
+          className={cn(
+            "flex items-center gap-1.5",
+            theme === key && "active",
+          )}
+        >
+          <Icon className="size-3.5" aria-hidden="true" />
+          <span className="hidden sm:inline">{label}</span>
+        </button>
+      ))}
     </div>
   );
 };

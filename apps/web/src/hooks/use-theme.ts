@@ -2,19 +2,24 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+export type AppTheme = "light" | "dark" | "neumorph";
+
+export const THEMES: AppTheme[] = ["light", "dark", "neumorph"];
+
 const STORAGE_KEY = "theme";
 
-function getInitial(): "light" | "dark" {
+function getInitial(): AppTheme {
   if (typeof window === "undefined") return "light";
   try {
-    return window.localStorage.getItem(STORAGE_KEY) === "dark" ? "dark" : "light";
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    return (THEMES as string[]).includes(saved ?? "") ? (saved as AppTheme) : "light";
   } catch {
     return "light";
   }
 }
 
 export function useTheme() {
-  const [theme, setTheme] = useState<"light" | "dark">(getInitial);
+  const [theme, setTheme] = useState<AppTheme>(getInitial);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -25,7 +30,11 @@ export function useTheme() {
     }
   }, [theme]);
 
-  const toggle = useCallback(() => setTheme((t) => (t === "dark" ? "light" : "dark")), []);
+  const toggle = useCallback(
+    () =>
+      setTheme((t) => THEMES[(THEMES.indexOf(t) + 1) % THEMES.length]),
+    [],
+  );
 
-  return { theme, toggle };
+  return { theme, setTheme, toggle };
 }
