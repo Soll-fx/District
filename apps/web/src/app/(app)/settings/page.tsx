@@ -635,12 +635,6 @@ function SettingsInner() {
               </Select>
             </div>
             <SettingRow
-              label={t("settings.emailNotif")}
-              hint={t("settings.emailNotifHint")}
-              checked={prefs?.emailNotif ?? true}
-              onChange={(v) => updatePrefs.mutate({ emailNotif: v })}
-            />
-            <SettingRow
               label={t("settings.pushNotif")}
               hint={t("settings.pushNotifHint")}
               checked={prefs?.pushNotif ?? true}
@@ -904,22 +898,10 @@ function SettingsInner() {
           <Card className="animate-in animate-delay-1 space-y-4 p-5">
             <h2 className="text-[15px] font-extrabold tracking-tight text-text-1">{t("settings.notificationsTitle")}</h2>
             <SettingRow
-              label={t("settings.emailNotif")}
-              hint={t("settings.emailNotifHint")}
-              checked={prefs?.emailNotif ?? true}
-              onChange={(v) => updatePrefs.mutate({ emailNotif: v })}
-            />
-            <SettingRow
               label={t("settings.ideaAlerts")}
               hint={t("settings.ideaAlertsHint")}
               checked={prefs?.ideaAlerts ?? true}
               onChange={(v) => updatePrefs.mutate({ ideaAlerts: v })}
-            />
-            <SettingRow
-              label={t("settings.weeklyDigest")}
-              hint={t("settings.weeklyDigestHint")}
-              checked={prefs?.weeklyDigest ?? false}
-              onChange={(v) => updatePrefs.mutate({ weeklyDigest: v })}
             />
           </Card>
 

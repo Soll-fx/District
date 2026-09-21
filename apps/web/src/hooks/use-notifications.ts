@@ -2,18 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 export type NotificationPrefs = {
-  emailNotif: boolean;
   pushNotif: boolean;
   ideaAlerts: boolean;
-  weeklyDigest: boolean;
   subscribed: boolean;
 };
 
 export type UpdatePrefsInput = {
-  emailNotif?: boolean;
   pushNotif?: boolean;
   ideaAlerts?: boolean;
-  weeklyDigest?: boolean;
 };
 
 export function useNotificationPrefs() {

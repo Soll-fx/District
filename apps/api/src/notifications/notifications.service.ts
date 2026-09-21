@@ -43,18 +43,14 @@ export class NotificationsService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
-        emailNotif: true,
         pushNotif: true,
         ideaAlerts: true,
-        weeklyDigest: true,
         pushSubscriptions: { select: { endpoint: true } },
       },
     });
     return {
-      emailNotif: user?.emailNotif ?? true,
       pushNotif: user?.pushNotif ?? true,
       ideaAlerts: user?.ideaAlerts ?? true,
-      weeklyDigest: user?.weeklyDigest ?? false,
       subscribed: (user?.pushSubscriptions?.length ?? 0) > 0,
     };
   }
@@ -62,25 +58,19 @@ export class NotificationsService {
   async setPreferences(
     userId: string,
     dto: {
-      emailNotif?: boolean;
       pushNotif?: boolean;
       ideaAlerts?: boolean;
-      weeklyDigest?: boolean;
     },
   ) {
     return this.prisma.user.update({
       where: { id: userId },
       data: {
-        emailNotif: dto.emailNotif,
         pushNotif: dto.pushNotif,
         ideaAlerts: dto.ideaAlerts,
-        weeklyDigest: dto.weeklyDigest,
       },
       select: {
-        emailNotif: true,
         pushNotif: true,
         ideaAlerts: true,
-        weeklyDigest: true,
       },
     });
   }

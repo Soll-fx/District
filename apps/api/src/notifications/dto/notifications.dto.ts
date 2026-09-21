@@ -18,10 +18,6 @@ export class SubscribePushDto {
 
 export class UpdateNotificationPrefsDto {
   @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  emailNotif?: boolean;
-
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
@@ -31,9 +27,4 @@ export class UpdateNotificationPrefsDto {
   @IsOptional()
   @IsBoolean()
   ideaAlerts?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  weeklyDigest?: boolean;
 }
