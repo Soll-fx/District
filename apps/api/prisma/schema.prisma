@@ -118,6 +118,7 @@ model User {
   streamReactions  StreamReaction[]
   pushSubscriptions PushSubscription[]
   sessions         Session[]
+  journalEntries   JournalEntry[]
   tournamentEntries TournamentPlayer[]
   tournamentMatchesA TournamentMatch[] @relation("TournamentMatchA")
   tournamentMatchesB TournamentMatch[] @relation("TournamentMatchB")
@@ -464,6 +465,29 @@ model StreamReaction {
   createdAt DateTime @default(now())
 
   @@unique([streamId, userId, emoji])
+}
+
+model JournalEntry {
+  id          String              @id @default(cuid())
+  title       String              @default("")
+  content     String              @default("")
+  createdById String?
+  createdBy   User?               @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  attachments JournalAttachment[]
+}
+
+model JournalAttachment {
+  id        String       @id @default(cuid())
+  entryId   String
+  entry     JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  url       String
+  fileName  String
+  mimeType  String?
+  size      Int?
+  createdAt DateTime     @default(now())
 }
 
 model Tournament {

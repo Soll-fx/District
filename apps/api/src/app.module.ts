@@ -19,6 +19,7 @@ import { GeopoliticsModule } from './geopolitics/geopolitics.module';
 import { EducationModule } from './education/education.module';
 import { PromosModule } from './promos/promos.module';
 import { UsersAdminModule } from './users-admin/users-admin.module';
+import { JournalModule } from './journal/journal.module';
 import { StreamsModule } from './streams/streams.module';
 import { TournamentsModule } from './tournaments/tournaments.module';
 import { BrokerModule } from './broker/broker.module';
@@ -48,6 +49,7 @@ import { InternalModule } from './internal/internal.module';
     EducationModule,
     PromosModule,
     UsersAdminModule,
+    JournalModule,
     StreamsModule,
     TournamentsModule,
     BrokerModule,

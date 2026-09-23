@@ -286,6 +286,24 @@ export type PromoCode = {
   userCount: number;
 };
 
+export type JournalAttachment = {
+  id: string;
+  url: string;
+  fileName: string;
+  mimeType: string | null;
+  size: number | null;
+  createdAt: string;
+};
+
+export type JournalEntry = {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  attachments: JournalAttachment[];
+};
+
 export type StreamReaction = {
   emoji: string;
   count: number;

@@ -11,6 +11,7 @@ export function AdminTabs() {
   const items = [
     { href: "/admin/users", label: t("admin.tab.users") },
     { href: "/admin/promos", label: t("admin.tab.promos") },
+    { href: "/admin/journal", label: t("admin.tab.journal") },
   ];
   return (
     <div className="flex w-full max-w-[320px] rounded-xl border border-card-border bg-card p-1">
