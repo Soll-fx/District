@@ -56,6 +56,8 @@ export default function AdminJournalPage() {
   const [content, setContent] = useState("");
   const [attachments, setAttachments] = useState<AttachmentInput[]>([]);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const submittingRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isAdmin) return null;
@@ -65,6 +67,7 @@ export default function AdminJournalPage() {
     setTitle("");
     setContent("");
     setAttachments([]);
+    setSaveError(null);
     setOpen(true);
   };
 
@@ -103,16 +106,34 @@ export default function AdminJournalPage() {
   };
 
   const handleSave = () => {
+    if (submittingRef.current || saving || upload.isPending) return;
     if (!content.trim()) return;
+    setSaveError(null);
+    submittingRef.current = true;
+
+    const onDone = () => {
+      submittingRef.current = false;
+    };
+
     if (editId) {
       updateEntry.mutate(
         { id: editId, title, content, attachments },
-        { onSuccess: () => closeForm() },
+        {
+          onSuccess: () => closeForm(),
+          onError: (err) =>
+            setSaveError(err instanceof Error ? err.message : "Ошибка сохранения"),
+          onSettled: onDone,
+        },
       );
     } else {
       createEntry.mutate(
         { title, content, attachments },
-        { onSuccess: () => closeForm() },
+        {
+          onSuccess: () => closeForm(),
+          onError: (err) =>
+            setSaveError(err instanceof Error ? err.message : "Ошибка сохранения"),
+          onSettled: onDone,
+        },
       );
     }
   };
@@ -123,6 +144,7 @@ export default function AdminJournalPage() {
     setTitle("");
     setContent("");
     setAttachments([]);
+    setSaveError(null);
   };
 
   const handleDelete = (id: string) => {
@@ -328,6 +350,12 @@ export default function AdminJournalPage() {
             )}
           </div>
 
+          {saveError && (
+            <p className="rounded-xl bg-neg-bg px-3 py-2 text-[12.5px] font-semibold text-neg">
+              {saveError}
+            </p>
+          )}
+
           <div className="flex justify-end gap-2">
             <button type="button" className="btn btn-ghost" onClick={closeForm}>
               {t("settings.cancel")}
@@ -336,9 +364,13 @@ export default function AdminJournalPage() {
               type="button"
               className="btn btn-primary"
               onClick={handleSave}
-              disabled={!content.trim() || saving}
+              disabled={!content.trim() || saving || upload.isPending}
             >
-              {saving ? t("settings.saving") : t("admin.journal.save")}
+              {upload.isPending
+                ? t("admin.journal.uploading")
+                : saving
+                  ? t("settings.saving")
+                  : t("admin.journal.save")}
             </button>
           </div>
         </div>

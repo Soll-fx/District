@@ -122,6 +122,7 @@ export default function StreamsPage() {
   const upload = useUploadStreamFile();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const submittingRef = useRef(false);
   const [showForm, setShowForm] = useState(false);
   const [mode, setMode] = useState<"link" | "upload">("link");
   const [title, setTitle] = useState("");
@@ -156,8 +157,9 @@ export default function StreamsPage() {
     });
   };
 
-  const handleSubmit = () => {
-    if (!title.trim() || !url.trim() || createStream.isPending) return;
+const handleSubmit = () => {
+    if (!title.trim() || !url.trim() || submittingRef.current || createStream.isPending) return;
+    submittingRef.current = true;
     createStream.mutate(
       {
         title: title.trim(),
@@ -171,10 +173,13 @@ export default function StreamsPage() {
           setTitle("");
           setDescription("");
           setUrl("");
+          setVideoType("YOUTUBE");
           setFileName(null);
           setMimeType(null);
-          setVideoType("YOUTUBE");
           setShowForm(false);
+        },
+        onSettled: () => {
+          submittingRef.current = false;
         },
       },
     );

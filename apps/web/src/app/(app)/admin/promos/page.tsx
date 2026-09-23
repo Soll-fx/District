@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Ticket, Trash2, Check } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
@@ -34,11 +34,13 @@ export default function AdminPromosPage() {
   const [days, setDays] = useState(30);
   const [copied, setCopied] = useState<string | null>(null);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const submittingRef = useRef(false);
 
   if (!isAdmin) return null;
 
   const handleCreate = () => {
-    if (!code.trim() || createPromo.isPending) return;
+    if (!code.trim() || submittingRef.current || createPromo.isPending) return;
+    submittingRef.current = true;
     createPromo.mutate(
       { code: code.trim().toUpperCase(), durationDays: days },
       {
@@ -46,6 +48,9 @@ export default function AdminPromosPage() {
           setCode("");
           setDays(30);
           setOpen(false);
+        },
+        onSettled: () => {
+          submittingRef.current = false;
         },
       },
     );

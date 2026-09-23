@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { LangProvider } from "@/lib/i18n";
 import { TelegramAutoLogin } from "@/components/telegram-auto-login";
+import { ApiWarmup } from "@/components/api-warmup";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(
@@ -20,6 +21,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <LangProvider>
         {children}
         <TelegramAutoLogin />
+        <ApiWarmup />
       </LangProvider>
     </QueryClientProvider>
   );
