@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UsersAdminService } from '../../users-admin/users-admin.service';
 import { TelegramAppBotService } from './telegram-app-bot.service';
@@ -96,7 +97,7 @@ export class TelegramAppBotUpdatesService {
     if (!['/start', '/admin', '/help'].includes(cmd)) return;
 
     const chatId: number | string = msg.chat.id;
-    const user = await this.prisma.user.findUnique({ where: { telegramId: fromId } });
+    let user = await this.prisma.user.findUnique({ where: { telegramId: fromId } });
     const isAdmin = Boolean(
       user?.role === 'ADMIN' || this.bot.adminChatOverride === fromId,
     );
@@ -110,7 +111,32 @@ export class TelegramAppBotUpdatesService {
     }
 
     if (cmd === '/start') {
-      const allowed = Boolean(user && (user.role === 'ADMIN' || user.tgAccess));
+      if (!user) {
+        const tgFrom = msg.from ?? {};
+        const name =
+          [tgFrom.first_name, tgFrom.last_name].filter(Boolean).join(' ').trim() ||
+          tgFrom.username ||
+          'Telegram user';
+        user = await this.prisma.user.upsert({
+          where: { telegramId: fromId },
+          create: {
+            telegramId: fromId,
+            telegramUsername: tgFrom.username ?? null,
+            name,
+            email: `tg_${fromId}@telegram.user`,
+            passwordHash: randomBytes(32).toString('hex'),
+            tgAccess: false,
+            lastSeenAt: new Date(),
+          },
+          update: {
+            telegramUsername: tgFrom.username ?? undefined,
+            name,
+            lastSeenAt: new Date(),
+          },
+        });
+      }
+
+      const allowed = user.role === 'ADMIN' || user.tgAccess;
       if (allowed) {
         await this.bot.send(
           chatId,
@@ -119,8 +145,9 @@ export class TelegramAppBotUpdatesService {
       } else {
         await this.bot.send(
           chatId,
-          '🔒 <b>Доступ закрыт</b>\n\nБот и мини-приложение доступны только по приглашению. Обратитесь к администратору, чтобы открыть вам доступ.',
+          '🔒 <b>Доступ закрыт</b>\n\nБот и мини-приложение доступны только по приглашению. Администратор уже получил уведомление и может открыть вам доступ.',
         );
+        await this.notifyAdminNewUser(user);
       }
       return;
     }
@@ -128,6 +155,31 @@ export class TelegramAppBotUpdatesService {
     await this.bot.send(
       chatId,
       '🔒 <b>Доступ закрыт</b>\n\nБот и мини-приложение доступны только по приглашению.',
+    );
+  }
+
+  private async notifyAdminNewUser(user: { id: string; name: string; telegramUsername: string | null }) {
+    const adminChat =
+      this.bot.adminChatOverride ??
+      (await this.prisma.user
+        .findFirst({
+          where: { role: 'ADMIN', telegramId: { not: null } },
+          select: { telegramId: true },
+          orderBy: { createdAt: 'asc' },
+        })
+        .then((a) => a?.telegramId ?? null)
+        .catch(() => null));
+    if (!adminChat) return;
+
+    const handle = user.telegramUsername ? `@${user.telegramUsername}` : `id ${user.id}`;
+    await this.bot.send(
+      adminChat,
+      `❗ <b>Новый пользователь</b>\n${user.name} (${handle})\nНажмите кнопку, чтобы выдать доступ к боту и мини-приложению:`,
+      {
+        inline_keyboard: [
+          [{ text: '🟢 Выдать доступ', callback_data: this.cb(`tg:grant:${user.id}`) }],
+        ],
+      },
     );
   }
 
