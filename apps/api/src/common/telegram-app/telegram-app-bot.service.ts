@@ -20,6 +20,7 @@ export class TelegramAppBotService implements OnModuleInit {
   private readonly token: string | undefined;
   private readonly appUrl: string;
   private readonly secret: string;
+  private readonly adminOverride: string | undefined;
 
   constructor(config: ConfigService) {
     this.token =
@@ -31,6 +32,11 @@ export class TelegramAppBotService implements OnModuleInit {
     ).replace(/\/+$/, '');
     this.secret =
       config.get<string>('TELEGRAM_APP_WEBHOOK_SECRET')?.trim() || WEBHOOK_SECRET_FALLBACK;
+    this.adminOverride = config.get<string>('TELEGRAM_APP_ADMIN_CHAT_ID')?.trim();
+  }
+
+  get adminChatOverride() {
+    return this.adminOverride;
   }
 
   get enabled() {

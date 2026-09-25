@@ -36,7 +36,10 @@ export class TelegramAppBotUpdatesService {
   private async handleCallback(cq: any) {
     const fromId = String(cq?.from?.id ?? '');
     const sender = await this.prisma.user.findUnique({ where: { telegramId: fromId } });
-    if (!sender || sender.role !== 'ADMIN') {
+    const isAdmin = Boolean(
+      sender?.role === 'ADMIN' || this.bot.adminChatOverride === fromId,
+    );
+    if (!isAdmin) {
       await this.bot.answer(cq.id, 'Доступ запрещён');
       return;
     }
@@ -94,12 +97,14 @@ export class TelegramAppBotUpdatesService {
 
     const chatId: number | string = msg.chat.id;
     const user = await this.prisma.user.findUnique({ where: { telegramId: fromId } });
-    const isAdminSender = Boolean(user?.role === 'ADMIN');
+    const isAdmin = Boolean(
+      user?.role === 'ADMIN' || this.bot.adminChatOverride === fromId,
+    );
     this.logger.log(
-      `[app-bot] cmd=${cmd} from=${fromId} user=${user?.id ?? 'none'} role=${user?.role ?? 'none'}`,
+      `[app-bot] cmd=${cmd} from=${fromId} user=${user?.id ?? 'none'} role=${user?.role ?? 'none'} admin=${isAdmin}`,
     );
 
-    if (isAdminSender) {
+    if (isAdmin) {
       await this.sendAdminPanel(chatId);
       return;
     }
