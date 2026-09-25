@@ -40,8 +40,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user || user.banned) return null;
 
     if (Date.now() - session.lastActiveAt.getTime() > LAST_ACTIVE_THROTTLE_MS) {
+      const now = new Date();
       void this.prisma.session
-        .update({ where: { id: session.id }, data: { lastActiveAt: new Date() } })
+        .update({ where: { id: session.id }, data: { lastActiveAt: now } })
+        .catch(() => {});
+      void this.prisma.user
+        .update({ where: { id: user.id }, data: { lastSeenAt: now } })
         .catch(() => {});
     }
 

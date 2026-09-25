@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import * as bcrypt from 'bcryptjs';
@@ -217,15 +221,23 @@ export class AuthService {
         name,
         email: `tg_${tgUser.id}@telegram.user`,
         passwordHash: randomBytes(32).toString('hex'),
+        tgAccess: false,
       },
       update: {
         telegramUsername: tgUser.username ?? undefined,
         telegramPhoto: tgUser.photo_url ?? undefined,
+        lastSeenAt: new Date(),
       },
     });
 
     if (user.banned) {
       throw new UnauthorizedException('Аккаунт заблокирован');
+    }
+
+    if (user.role !== 'ADMIN' && !user.tgAccess) {
+      throw new ForbiddenException(
+        'Доступ в бот закрыт. Выдачу доступа уточняйте у администратора',
+      );
     }
 
     return this.createSession(user, meta);

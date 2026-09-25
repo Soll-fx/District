@@ -96,6 +96,10 @@ model User {
   telegramId       String?  @unique
   telegramUsername String?
   telegramPhoto    String?
+  tgAccess         Boolean  @default(false)
+  tgAccessGrantedAt  DateTime?
+  tgAccessRevokedAt  DateTime?
+  lastSeenAt       DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

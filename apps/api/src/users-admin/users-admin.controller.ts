@@ -17,6 +17,11 @@ export class UsersAdminController {
     return this.users.findAll();
   }
 
+  @Get('tg')
+  tgList() {
+    return this.users.tgList();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.users.findOne(id);
@@ -25,5 +30,10 @@ export class UsersAdminController {
   @Patch(':id/ban')
   setBan(@Param('id') id: string, @Body() body: { banned: boolean }) {
     return this.users.setBan(id, body.banned === true);
+  }
+
+  @Patch(':id/tg-access')
+  setTgAccess(@Param('id') id: string, @Body() body: { access: boolean }) {
+    return this.users.setTgAccess(id, body.access === true);
   }
 }
