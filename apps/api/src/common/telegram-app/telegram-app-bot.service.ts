@@ -1,6 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../../prisma/prisma.service';
 import {
   answerBotCallback,
   parseData,
@@ -21,13 +20,8 @@ export class TelegramAppBotService implements OnModuleInit {
   private readonly token: string | undefined;
   private readonly appUrl: string;
   private readonly secret: string;
-  private readonly adminEnv: string | undefined;
-  private resolvedAdminChat: string | null | undefined;
 
-  constructor(
-    config: ConfigService,
-    private readonly prisma: PrismaService,
-  ) {
+  constructor(config: ConfigService) {
     this.token =
       config.get<string>('TELEGRAM_APP_BOT_TOKEN')?.trim() ||
       process.env.BOT_TOKEN?.trim() ||
@@ -37,7 +31,6 @@ export class TelegramAppBotService implements OnModuleInit {
     ).replace(/\/+$/, '');
     this.secret =
       config.get<string>('TELEGRAM_APP_WEBHOOK_SECRET')?.trim() || WEBHOOK_SECRET_FALLBACK;
-    this.adminEnv = config.get<string>('TELEGRAM_APP_ADMIN_CHAT_ID')?.trim();
   }
 
   get enabled() {
@@ -54,23 +47,6 @@ export class TelegramAppBotService implements OnModuleInit {
 
   get webhookSecret() {
     return this.secret;
-  }
-
-  async adminChatId(): Promise<string | null> {
-    if (this.adminEnv) return this.adminEnv;
-    if (this.resolvedAdminChat !== undefined) return this.resolvedAdminChat;
-    try {
-      const admin = await this.prisma.user.findFirst({
-        where: { role: 'ADMIN', telegramId: { not: null } },
-        select: { telegramId: true },
-        orderBy: { createdAt: 'asc' },
-      });
-      this.resolvedAdminChat = admin?.telegramId ?? null;
-    } catch (err) {
-      this.logger.warn(`adminChatId: ${(err as Error).message}`);
-      this.resolvedAdminChat = null;
-    }
-    return this.resolvedAdminChat;
   }
 
   async boot(): Promise<void> {

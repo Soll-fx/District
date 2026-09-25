@@ -5,6 +5,12 @@ import { TelegramAppBotService } from './telegram-app-bot.service';
 
 const ADMIN_CB_PREFIX = 'tg:';
 
+const CMD_ALIASES: Record<string, string> = {
+  '/админ': '/admin',
+  '/старт': '/start',
+  '/помощь': '/help',
+};
+
 @Injectable()
 export class TelegramAppBotUpdatesService {
   private readonly logger = new Logger(TelegramAppBotUpdatesService.name);
@@ -28,8 +34,9 @@ export class TelegramAppBotUpdatesService {
   }
 
   private async handleCallback(cq: any) {
-    const adminChatId = await this.bot.adminChatId();
-    if (!adminChatId || String(cq?.from?.id ?? '') !== String(adminChatId)) {
+    const fromId = String(cq?.from?.id ?? '');
+    const sender = await this.prisma.user.findUnique({ where: { telegramId: fromId } });
+    if (!sender || sender.role !== 'ADMIN') {
       await this.bot.answer(cq.id, 'Доступ запрещён');
       return;
     }
@@ -80,13 +87,14 @@ export class TelegramAppBotUpdatesService {
     const text = String(msg?.text ?? '').trim();
     if (!text.startsWith('/')) return;
 
-    const cmd = text.toLowerCase().split(/\s+/)[0];
+    const fromId = String(msg?.from?.id ?? '');
+    const rawCmd = text.toLowerCase().split(/\s+/)[0];
+    const cmd = CMD_ALIASES[rawCmd] ?? rawCmd;
     if (!['/start', '/admin', '/help'].includes(cmd)) return;
 
     const chatId: number | string = msg.chat.id;
-    const fromId = String(msg?.from?.id ?? '');
-    const adminChatId = await this.bot.adminChatId();
-    const isAdminSender = Boolean(adminChatId) && fromId === String(adminChatId);
+    const user = await this.prisma.user.findUnique({ where: { telegramId: fromId } });
+    const isAdminSender = Boolean(user?.role === 'ADMIN');
 
     if (isAdminSender) {
       await this.sendAdminPanel(chatId);
@@ -94,7 +102,6 @@ export class TelegramAppBotUpdatesService {
     }
 
     if (cmd === '/start') {
-      const user = await this.prisma.user.findUnique({ where: { telegramId: fromId } });
       const allowed = Boolean(user && (user.role === 'ADMIN' || user.tgAccess));
       if (allowed) {
         await this.bot.send(
