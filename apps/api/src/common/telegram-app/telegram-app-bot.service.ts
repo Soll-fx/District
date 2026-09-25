@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -16,7 +16,7 @@ const APP_URL_FALLBACK = 'https://district-api-xlc3.onrender.com';
 const WEBHOOK_SECRET_FALLBACK = 'district-app-bot-wh-2026-x9';
 
 @Injectable()
-export class TelegramAppBotService {
+export class TelegramAppBotService implements OnModuleInit {
   private readonly logger = new Logger(TelegramAppBotService.name);
   private readonly token: string | undefined;
   private readonly appUrl: string;
@@ -42,6 +42,10 @@ export class TelegramAppBotService {
 
   get enabled() {
     return Boolean(this.token);
+  }
+
+  onModuleInit() {
+    void this.boot();
   }
 
   get webhookUrl() {
