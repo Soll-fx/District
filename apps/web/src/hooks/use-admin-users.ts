@@ -17,10 +17,6 @@ export type AdminUserRow = {
   balance: number | null;
   banned: boolean;
   country: string | null;
-  telegramId: string | null;
-  telegramUsername: string | null;
-  tgAccess: boolean;
-  lastSeenAt: string | null;
 };
 
 export type AdminUserProfile = AdminUserRow & {
@@ -29,13 +25,6 @@ export type AdminUserProfile = AdminUserRow & {
   telegram: string | null;
   youtube: string | null;
   tradingview: string | null;
-  telegramPhoto: string | null;
-  tgAccessGrantedAt: string | null;
-  tgAccessRevokedAt: string | null;
-  online: boolean;
-  rank: number | null;
-  score: number | null;
-  netPnl: number | null;
   promos: { code: string; activatedAt: string }[];
   accounts: { name: string; balance: number; currency: string }[];
   stats: {
@@ -81,23 +70,6 @@ export function useBanUser() {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
-    },
-  });
-}
-
-export function useSetTgAccess() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: { id: string; access: boolean }) =>
-      api.patch<{
-        id: string;
-        tgAccess: boolean;
-        tgAccessGrantedAt: string | null;
-        tgAccessRevokedAt: string | null;
-      }>(`/admin/users/${input.id}/tg-access`, { access: input.access }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
-      queryClient.invalidateQueries({ queryKey: ["admin", "tg"] });
     },
   });
 }

@@ -8,5 +8,6 @@ import { UsersAdminService } from './users-admin.service';
   imports: [TradesModule, RewardsModule],
   controllers: [UsersAdminController],
   providers: [UsersAdminService],
+  exports: [UsersAdminService],
 })
 export class UsersAdminModule {}

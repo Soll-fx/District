@@ -12,10 +12,9 @@ export function AdminTabs() {
     { href: "/admin/users", label: t("admin.tab.users") },
     { href: "/admin/promos", label: t("admin.tab.promos") },
     { href: "/admin/journal", label: t("admin.tab.journal") },
-    { href: "/admin/tg", label: t("admin.tab.tg") },
   ];
   return (
-    <div className="flex w-full max-w-[420px] rounded-xl border border-card-border bg-card p-1">
+    <div className="flex w-full max-w-[320px] rounded-xl border border-card-border bg-card p-1">
       {items.map((i) => {
         const active = pathname?.startsWith(i.href);
         return (

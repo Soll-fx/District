@@ -196,6 +196,41 @@ export class TelegramService {
     return id;
   }
 
+  signData(data: string): string {
+    return `${data}:${this.sign(data)}`;
+  }
+
+  parseData(data: string): string | null {
+    if (!data) return null;
+    const i = data.lastIndexOf(':');
+    if (i <= 0) return null;
+    const payload = data.slice(0, i);
+    const sig = data.slice(i + 1);
+    return this.sign(payload) === sig ? payload : null;
+  }
+
+  async sendMessageTo(chatId: number | string, text: string, replyMarkup?: unknown) {
+    if (!this.enabled) return;
+    const payload: TgPayload = {
+      chat_id: chatId,
+      text: text.slice(0, 4000),
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+    };
+    if (replyMarkup) payload.reply_markup = replyMarkup as TgPayload;
+    await this.post('sendMessage', payload);
+  }
+
+  async setCommands() {
+    if (!this.token) return;
+    await this.post('setMyCommands', {
+      commands: [
+        { command: 'start', description: 'Запустить бота' },
+        { command: 'admin', description: 'Админ-панель (только для админа)' },
+      ],
+    });
+  }
+
   private resolveKeyboard(ticketId: string) {
     return {
       inline_keyboard: [
