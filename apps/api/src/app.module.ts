@@ -24,6 +24,7 @@ import { StreamsModule } from './streams/streams.module';
 import { TournamentsModule } from './tournaments/tournaments.module';
 import { BrokerModule } from './broker/broker.module';
 import { TelegramModule } from './common/telegram/telegram.module';
+import { TelegramAppBotModule } from './common/telegram-app/telegram-app-bot.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { InternalModule } from './internal/internal.module';
 
@@ -54,6 +55,7 @@ import { InternalModule } from './internal/internal.module';
     TournamentsModule,
     BrokerModule,
     TelegramModule,
+    TelegramAppBotModule,
     NotificationsModule,
     InternalModule,
   ],

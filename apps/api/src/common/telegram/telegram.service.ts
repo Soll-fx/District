@@ -1,81 +1,33 @@
 import { createHmac } from 'crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../../prisma/prisma.service';
 
 type ParseImage = { mime: string; buffer: Buffer } | null;
 
 type TgPayload = Record<string, unknown>;
-
-const BOT_TOKEN_FALLBACK = '8618066024:AAGY4r1FP0Q_ogtj2qNRNzK8EBbRbtqjveM';
 
 @Injectable()
 export class TelegramService {
   private readonly logger = new Logger(TelegramService.name);
   private readonly token?: string;
   private readonly chatId?: string;
-  private readonly appUrl: string;
-  private readonly webhookSecret: string;
-  private resolvedChatId?: string | null;
 
-  constructor(
-    config: ConfigService,
-    private readonly prisma: PrismaService,
-  ) {
+  constructor(config: ConfigService) {
     const token = config.get<string>('TELEGRAM_BOT_TOKEN');
     const chatId = config.get<string>('TELEGRAM_ADMIN_CHAT_ID');
-    this.token = token?.trim() || BOT_TOKEN_FALLBACK;
+    this.token = token?.trim() || undefined;
     this.chatId = chatId?.trim() || undefined;
-    this.appUrl = (
-      config.get<string>('PUBLIC_APP_URL') ?? 'https://district-api-xlc3.onrender.com'
-    ).replace(/\/$/, '');
-    this.webhookSecret =
-      config.get<string>('TELEGRAM_WEBHOOK_SECRET') ?? 'district-bot-wh-2026-x9';
     if (this.token && this.chatId) {
       this.logger.log('Telegram-уведомления включены');
     }
   }
 
   get enabled() {
-    return Boolean(this.token);
-  }
-
-  get webhookPath() {
-    return '/api/telegram/webhook';
-  }
-
-  get hookSecret() {
-    return this.webhookSecret;
-  }
-
-  async configureWebhook(): Promise<boolean> {
-    if (!this.token) return false;
-    const res = await this.post('setWebhook', {
-      url: `${this.appUrl}${this.webhookPath}`,
-      secret_token: this.webhookSecret,
-      allowed_updates: ['message', 'callback_query'],
-    });
-    return Boolean(res?.ok);
+    return Boolean(this.token && this.chatId);
   }
 
   get adminChatId() {
     return this.chatId;
-  }
-
-  async adminChat(): Promise<string | null> {
-    if (this.chatId) return this.chatId;
-    if (this.resolvedChatId !== undefined) return this.resolvedChatId;
-    try {
-      const admin = await this.prisma.user.findFirst({
-        where: { telegramId: { not: null } },
-        orderBy: { createdAt: 'asc' },
-        select: { telegramId: true },
-      });
-      this.resolvedChatId = admin?.telegramId ?? null;
-    } catch {
-      this.resolvedChatId = null;
-    }
-    return this.resolvedChatId;
   }
 
   ticketRef(ticketId: string) {
@@ -108,7 +60,7 @@ export class TelegramService {
     method: string,
     payload: TgPayload,
   ): Promise<{ ok: boolean } | null> {
-    if (!this.token) return null;
+    if (!this.token || !this.chatId) return null;
     try {
       const res = await fetch(
         `https://api.telegram.org/bot${this.token}/${method}`,
@@ -133,11 +85,9 @@ export class TelegramService {
   }
 
   async sendMessage(text: string, resolveTicketId?: string) {
-    if (!this.token) return;
-    const chatId = await this.adminChat();
-    if (!chatId) return;
+    if (!this.enabled) return;
     const payload: TgPayload = {
-      chat_id: chatId,
+      chat_id: this.chatId,
       text: text.slice(0, 4000),
       parse_mode: 'HTML',
       disable_web_page_preview: true,
@@ -147,9 +97,7 @@ export class TelegramService {
   }
 
   async sendPhoto(image: string | null | undefined, caption: string, resolveTicketId?: string) {
-    if (!this.token) return;
-    const chatId = await this.adminChat();
-    if (!chatId) return;
+    if (!this.enabled) return;
     const parsed = this.parseImage(image);
     if (!parsed) {
       await this.sendMessage(caption, resolveTicketId);
@@ -158,7 +106,7 @@ export class TelegramService {
     const { mime, buffer } = parsed;
     try {
       const form = new FormData();
-      form.append('chat_id', chatId);
+      form.append('chat_id', this.chatId!);
       form.append('photo', new Blob([new Uint8Array(buffer)], { type: mime }), 'screenshot.jpg');
       form.append('caption', caption.slice(0, 1000));
       form.append('parse_mode', 'HTML');
@@ -246,41 +194,6 @@ export class TelegramService {
     const [, id, sig] = match;
     if (this.sign(`resolve:${id}`) !== sig) return null;
     return id;
-  }
-
-  signData(data: string): string {
-    return `${data}:${this.sign(data)}`;
-  }
-
-  parseData(data: string): string | null {
-    if (!data) return null;
-    const i = data.lastIndexOf(':');
-    if (i <= 0) return null;
-    const payload = data.slice(0, i);
-    const sig = data.slice(i + 1);
-    return this.sign(payload) === sig ? payload : null;
-  }
-
-  async sendMessageTo(chatId: number | string, text: string, replyMarkup?: unknown) {
-    if (!this.enabled) return;
-    const payload: TgPayload = {
-      chat_id: chatId,
-      text: text.slice(0, 4000),
-      parse_mode: 'HTML',
-      disable_web_page_preview: true,
-    };
-    if (replyMarkup) payload.reply_markup = replyMarkup as TgPayload;
-    await this.post('sendMessage', payload);
-  }
-
-  async setCommands() {
-    if (!this.token) return;
-    await this.post('setMyCommands', {
-      commands: [
-        { command: 'start', description: 'Запустить бота' },
-        { command: 'admin', description: 'Админ-панель (только для админа)' },
-      ],
-    });
   }
 
   private resolveKeyboard(ticketId: string) {
