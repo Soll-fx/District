@@ -14,6 +14,8 @@ export class TelegramService {
   private readonly logger = new Logger(TelegramService.name);
   private readonly token?: string;
   private readonly chatId?: string;
+  private readonly appUrl: string;
+  private readonly webhookSecret: string;
   private resolvedChatId?: string | null;
 
   constructor(
@@ -24,6 +26,11 @@ export class TelegramService {
     const chatId = config.get<string>('TELEGRAM_ADMIN_CHAT_ID');
     this.token = token?.trim() || BOT_TOKEN_FALLBACK;
     this.chatId = chatId?.trim() || undefined;
+    this.appUrl = (
+      config.get<string>('PUBLIC_APP_URL') ?? 'https://district-api-xlc3.onrender.com'
+    ).replace(/\/$/, '');
+    this.webhookSecret =
+      config.get<string>('TELEGRAM_WEBHOOK_SECRET') ?? 'district-bot-wh-2026-x9';
     if (this.token && this.chatId) {
       this.logger.log('Telegram-уведомления включены');
     }
@@ -31,6 +38,24 @@ export class TelegramService {
 
   get enabled() {
     return Boolean(this.token);
+  }
+
+  get webhookPath() {
+    return '/api/telegram/webhook';
+  }
+
+  get hookSecret() {
+    return this.webhookSecret;
+  }
+
+  async configureWebhook(): Promise<boolean> {
+    if (!this.token) return false;
+    const res = await this.post('setWebhook', {
+      url: `${this.appUrl}${this.webhookPath}`,
+      secret_token: this.webhookSecret,
+      allowed_updates: ['message', 'callback_query'],
+    });
+    return Boolean(res?.ok);
   }
 
   get adminChatId() {

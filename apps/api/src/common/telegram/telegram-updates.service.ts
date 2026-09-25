@@ -24,9 +24,23 @@ export class TelegramUpdatesService implements OnModuleInit {
 
   onModuleInit() {
     if (!this.telegram.enabled) return;
-    void this.telegram.setCommands();
+    void this.boot();
+  }
+
+  private async boot() {
+    await this.telegram.setCommands();
+    const wh = await this.telegram.configureWebhook();
+    if (wh) {
+      this.logger.log('Telegram: вебхук включён');
+      return;
+    }
+    this.logger.warn('Telegram: вебхук не настроен, переходим на long-polling');
     this.running = true;
     void this.poll();
+  }
+
+  async handleUpdate(update: any) {
+    await this.handle(update);
   }
 
   private async poll() {
