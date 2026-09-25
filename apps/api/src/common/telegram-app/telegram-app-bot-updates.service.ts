@@ -62,25 +62,32 @@ export class TelegramAppBotUpdatesService {
       await this.bot.answer(cq.id, 'Ошибка: чат не найден');
       return;
     }
+    const msgId = cq?.message?.message_id as number | undefined;
 
     switch (action) {
       case 'menu':
-        await this.sendAdminPanel(chatId);
+        await this.render(chatId, msgId, this.adminPanelPayload(), cq.id);
         break;
       case 'list':
-        await this.sendUserList(chatId, cq.id);
+        await this.renderUserList(chatId, msgId, cq.id);
+        break;
+      case 'user':
+        await this.renderUserCard(chatId, msgId, cq.id, id);
+        break;
+      case 'card':
+        await this.toggleCard(cq, chatId, msgId, id);
+        break;
+      case 'gl':
+        await this.toggleList(cq, chatId, msgId, id, true);
+        break;
+      case 'rl':
+        await this.toggleList(cq, chatId, msgId, id, false);
         break;
       case 'glist':
-        await this.sendAccessList(chatId, cq.id, true);
+        await this.renderAccessList(chatId, msgId, cq.id, true);
         break;
       case 'rlist':
-        await this.sendAccessList(chatId, cq.id, false);
-        break;
-      case 'grant':
-        await this.toggleAccess(cq, chatId, id, true);
-        break;
-      case 'revoke':
-        await this.toggleAccess(cq, chatId, id, false);
+        await this.renderAccessList(chatId, msgId, cq.id, false);
         break;
       default:
         await this.bot.answer(cq.id, 'Неизвестная кнопка');
@@ -106,7 +113,7 @@ export class TelegramAppBotUpdatesService {
     );
 
     if (isAdmin) {
-      await this.sendAdminPanel(chatId);
+      await this.render(chatId, undefined, this.adminPanelPayload());
       return;
     }
 
@@ -158,7 +165,11 @@ export class TelegramAppBotUpdatesService {
     );
   }
 
-  private async notifyAdminNewUser(user: { id: string; name: string; telegramUsername: string | null }) {
+  private async notifyAdminNewUser(user: {
+    id: string;
+    name: string;
+    telegramUsername: string | null;
+  }) {
     const adminChat =
       this.bot.adminChatOverride ??
       (await this.prisma.user
@@ -177,13 +188,13 @@ export class TelegramAppBotUpdatesService {
       `❗ <b>Новый пользователь</b>\n${user.name} (${handle})\nНажмите кнопку, чтобы выдать доступ к боту и мини-приложению:`,
       {
         inline_keyboard: [
-          [{ text: '🟢 Выдать доступ', callback_data: this.cb(`tg:grant:${user.id}`) }],
+          [{ text: '🟢 Выдать доступ', callback_data: this.cb(`tg:gl:${user.id}`) }],
         ],
       },
     );
   }
 
-  private async sendAdminPanel(chatId: number | string) {
+  private adminPanelPayload() {
     const keyboard = {
       inline_keyboard: [
         [{ text: '👥 Список пользователей', callback_data: this.cb('tg:list') }],
@@ -193,122 +204,178 @@ export class TelegramAppBotUpdatesService {
         ],
       ],
     };
-    await this.bot.send(
-      chatId,
-      '🛡 <b>Админ-панель бота</b>\n\nУправление доступом к боту и мини-приложению.\n\nСписок пользователей — карточки с прибылью, активностью и рейтингом.',
+    return {
+      text: '🛡 <b>Админ-панель бота</b>\n\nУправление доступом к боту и мини-приложению.\n\nСписок пользователей — нажмите на юзера, чтобы открыть его карточку.',
       keyboard,
-    );
+    };
   }
 
-  private async sendUserList(chatId: number | string, ackId?: string) {
-    const cards = await this.usersAdmin.tgList();
-    if (!cards.length) {
-      await this.bot.send(chatId, 'Пока никто не входил через Telegram.');
-      if (ackId) await this.bot.answer(ackId, 'Пользователей: 0');
-      return;
+  private userListPayload(cards: TgCard[]) {
+    const users = cards.slice(0, 12);
+    const rows: { text: string; callback_data: string }[][] = [];
+    for (let i = 0; i < users.length; i += 2) {
+      const row = [this.userButton(users[i])];
+      if (users[i + 1]) row.push(this.userButton(users[i + 1]));
+      rows.push(row);
     }
-
-    let buffer = '';
-    const chunks: string[] = [];
-    const shown = cards.slice(0, 12);
-    for (const c of shown) {
-      const card = this.cardText(c);
-      if (buffer.length + card.length > 1800) {
-        chunks.push(buffer);
-        buffer = '';
-      }
-      buffer += card + '\n────────────\n';
-    }
-    if (buffer) chunks.push(buffer);
-    if (cards.length > shown.length) {
-      chunks[chunks.length - 1] += `\n…и ещё ${cards.length - shown.length} пользователей`;
-    }
-
-    for (const chunk of chunks) {
-      await this.bot.send(chatId, chunk);
-    }
-    if (ackId) await this.bot.answer(ackId, `Пользователей: ${cards.length}`);
+    rows.push([{ text: '🛡 Меню', callback_data: this.cb('tg:menu') }]);
+    const tail = cards.length > users.length ? `\n…и ещё ${cards.length - users.length}` : '';
+    return {
+      text: `👥 <b>Пользователи в Telegram:</b> ${cards.length}${tail}\n\nНажмите на юзера, чтобы открыть карточку:`,
+      keyboard: { inline_keyboard: rows },
+    };
   }
 
-  private async sendAccessList(chatId: number | string, ackId: string, wantGranted: boolean) {
-    const cards = await this.usersAdmin.tgList();
+  private accessListPayload(cards: TgCard[], wantGranted: boolean) {
     const target = cards.filter((c) => !c.protected && c.tgAccess === wantGranted);
-
-    if (!target.length) {
-      await this.bot.answer(
-        ackId,
-        wantGranted ? 'Всем уже выдан доступ' : 'Нет пользователей с доступом',
-      );
-      return;
-    }
+    if (!target.length) return null;
 
     const rows = target.slice(0, 8).map((c) => [
-      {
-        text: (c.name ?? '?').slice(0, 28),
-        callback_data: this.cb(`tg:${wantGranted ? 'revoke' : 'grant'}:${c.id}`),
-      },
+      { text: this.fit(c.name || '?', 28), callback_data: this.cb(`tg:${wantGranted ? 'rl' : 'gl'}:${c.id}`) },
     ]);
     rows.push([{ text: '🛡 Меню', callback_data: this.cb('tg:menu') }]);
 
-    await this.bot.send(
-      chatId,
-      wantGranted
+    return {
+      text: wantGranted
         ? 'Нажмите на пользователя, чтобы <b>забрать</b> доступ:'
         : 'Нажмите на пользователя, чтобы <b>выдать</b> доступ:',
-      { inline_keyboard: rows },
-    );
-    await this.bot.answer(ackId, 'Оk');
+      keyboard: { inline_keyboard: rows },
+    };
   }
 
-  private async toggleAccess(
-    cq: any,
+  private userCardPayload(c: TgCard) {
+    const accessBtn = c.protected
+      ? []
+      : [
+          {
+            text: c.tgAccess ? '🔒 Забрать доступ' : '🔓 Выдать доступ',
+            callback_data: this.cb(`tg:card:${c.id}`),
+          },
+        ];
+    const keyboard = {
+      inline_keyboard: [
+        accessBtn,
+        [
+          { text: '🔙 К списку', callback_data: this.cb('tg:list') },
+          { text: '🛡 Меню', callback_data: this.cb('tg:menu') },
+        ],
+      ].filter((row) => row.length),
+    };
+    return { text: this.cardText(c), keyboard };
+  }
+
+  private async render(
     chatId: number | string,
-    id: string | undefined,
-    grant: boolean,
+    messageId: number | undefined,
+    payload: { text: string; keyboard: { inline_keyboard: unknown[] } } | null,
+    ackId?: string,
   ) {
+    if (!payload) {
+      if (ackId) await this.bot.answer(ackId, 'Ок');
+      return;
+    }
+    if (messageId) {
+      await this.bot.edit(chatId, messageId, payload.text, payload.keyboard);
+    } else {
+      await this.bot.send(chatId, payload.text, payload.keyboard);
+    }
+    if (ackId) await this.bot.answer(ackId, 'Оk');
+  }
+
+  private async renderUserList(chatId: number | string, messageId: number | undefined, ackId?: string) {
+    const cards = await this.usersAdmin.tgList();
+    if (!cards.length) {
+      const emptyText = 'Пока никто не входил через Telegram.';
+      if (messageId) await this.bot.edit(chatId, messageId, emptyText);
+      else await this.bot.send(chatId, emptyText);
+      if (ackId) await this.bot.answer(ackId, 'Пользователей: 0');
+      return;
+    }
+    await this.render(chatId, messageId, this.userListPayload(cards), ackId);
+  }
+
+  private async renderUserCard(chatId: number | string, messageId: number | undefined, ackId: string, id: string | undefined) {
+    if (!id) {
+      await this.bot.answer(ackId, 'Ошибка: id не передан');
+      return;
+    }
+    const cards = await this.usersAdmin.tgList();
+    const card = cards.find((c) => c.id === id);
+    if (!card) {
+      await this.bot.answer(ackId, 'Пользователь не найден');
+      return;
+    }
+    await this.render(chatId, messageId, this.userCardPayload(card), ackId);
+  }
+
+  private async renderAccessList(chatId: number | string, messageId: number | undefined, ackId: string, wantGranted: boolean) {
+    const cards = await this.usersAdmin.tgList();
+    const payload = this.accessListPayload(cards, wantGranted);
+    if (!payload) {
+      await this.bot.answer(ackId, wantGranted ? 'Всем уже выдан доступ' : 'Нет пользователей с доступом');
+      return;
+    }
+    await this.render(chatId, messageId, payload, ackId);
+  }
+
+  private async toggleCard(cq: any, chatId: number | string, messageId: number | undefined, id: string | undefined) {
     if (!id) {
       await this.bot.answer(cq.id, 'Ошибка: id не передан');
       return;
     }
     try {
-      await this.usersAdmin.setTgAccess(id, grant);
-      await this.bot.answer(cq.id, grant ? '✅ Доступ выдан' : '🔒 Доступ отозван');
-      await this.sendUserList(chatId);
+      const cards = await this.usersAdmin.tgList();
+      const card = cards.find((c) => c.id === id);
+      if (!card || card.protected) {
+        await this.bot.answer(cq.id, 'Действие недоступно');
+        return;
+      }
+      await this.usersAdmin.setTgAccess(id, !card.tgAccess);
+      await this.bot.answer(cq.id, card.tgAccess ? '🔒 Доступ отозван' : '✅ Доступ выдан');
+      const fresh = await this.usersAdmin.tgList();
+      const updated = fresh.find((c) => c.id === id);
+      if (messageId && updated) {
+        await this.bot.edit(chatId, messageId, this.cardText(updated), this.userCardPayload(updated).keyboard);
+      }
     } catch (err) {
-      this.logger.warn(`tg access ${grant ? 'grant' : 'revoke'}: ${(err as Error).message}`);
+      this.logger.warn(`tg toggle: ${(err as Error).message}`);
       await this.bot.answer(cq.id, (err as Error).message.slice(0, 120));
     }
   }
 
-  private cardText(c: {
-    name: string;
-    telegramUsername: string | null;
-    telegramId: string | null;
-    tgAccess: boolean;
-    online: boolean;
-    lastSeenAt: string | Date | null;
-    netPnl: number | null;
-    rank: number | null;
-    topAsset: string | null;
-    count: number;
-    protected: boolean;
-  }) {
-    const esc = (v: string) =>
-      v.replace(/[&<>"']/g, (ch) => {
-        switch (ch) {
-          case '&':
-            return '&amp;';
-          case '<':
-            return '&lt;';
-          case '>':
-            return '&gt;';
-          case '"':
-            return '&quot;';
-          default:
-            return '&#39;';
-        }
-      });
-    const name = esc(c.name || 'Пользователь');
+  private async toggleList(cq: any, chatId: number | string, messageId: number | undefined, id: string | undefined, grant: boolean) {
+    if (!id) {
+      await this.bot.answer(cq.id, 'Ошибка: id не передан');
+      return;
+    }
+    try {
+      const cards = await this.usersAdmin.tgList();
+      const card = cards.find((c) => c.id === id);
+      if (!card || card.protected) {
+        await this.bot.answer(cq.id, 'Действие недоступно');
+        return;
+      }
+      await this.usersAdmin.setTgAccess(id, grant);
+      await this.bot.answer(cq.id, grant ? '✅ Доступ выдан' : '🔒 Доступ отозван');
+      const fresh = await this.usersAdmin.tgList();
+      const payload = this.accessListPayload(fresh, !grant);
+      if (messageId) {
+        if (payload) await this.bot.edit(chatId, messageId, payload.text, payload.keyboard);
+        else await this.bot.edit(chatId, messageId, grant ? 'Всем уже выдан доступ' : 'Нет пользователей с доступом');
+      }
+    } catch (err) {
+      this.logger.warn(`tg ${grant ? 'grant' : 'revoke'}: ${(err as Error).message}`);
+      await this.bot.answer(cq.id, (err as Error).message.slice(0, 120));
+    }
+  }
+
+  private userButton(c: TgCard) {
+    const state = c.tgAccess ? '✅' : '❌';
+    return { text: `${state} ${this.fit(c.name || '?', 18)}`, callback_data: this.cb(`tg:user:${c.id}`) };
+  }
+
+  private cardText(c: TgCard) {
+    const name = this.esc(c.name || 'Пользователь');
     const handle = c.telegramUsername ? `@${c.telegramUsername}` : String(c.telegramId ?? '');
     const pnl =
       c.netPnl === null
@@ -324,13 +391,58 @@ export class TelegramAppBotUpdatesService {
       : null;
     const state = c.tgAccess ? '✅ Доступ открыт' : '❌ Доступ закрыт';
     const activity = c.online ? '🟢 В сети' : `⚪ Не в сети${seen ? ` · ${seen}` : ''}`;
+    const winRate = c.winRate === null || c.winRate === undefined ? '—' : `${c.winRate}%`;
     return `#${c.rank ?? '—'} <b>${name}</b>${c.protected ? ' 👑' : ''}
-${handle} · ${c.telegramId ?? '—'}
-${state} · ${activity}
-💰 ${pnl} · 🏆 Топ: ${c.topAsset ?? '—'} · ${c.count} сделок`;
+${handle} · <code>${c.telegramId ?? '—'}</code>
+
+${state}
+${activity}
+
+💰 P&L: <b>${pnl}</b>
+📊 Сделок: ${c.count} · 🎯 Win rate: ${winRate}
+🏆 Топ-актив: ${this.esc(c.topAsset ?? '—')}
+${c.score !== null && c.score !== undefined ? `⭐ Счёт: ${c.score.toLocaleString('ru-RU')}` : ''}`;
+  }
+
+  private fit(value: string, max: number) {
+    return value.length > max ? value.slice(0, max - 1) + '…' : value;
+  }
+
+  private esc(value: string) {
+    return String(value).replace(/[&<>"']/g, (ch) => {
+      switch (ch) {
+        case '&':
+          return '&amp;';
+        case '<':
+          return '&lt;';
+        case '>':
+          return '&gt;';
+        case '"':
+          return '&quot;';
+        default:
+          return '&#39;';
+      }
+    });
   }
 
   private cb(data: string) {
     return this.bot.sign(data);
   }
 }
+
+type TgCard = {
+  id: string;
+  name: string;
+  telegramUsername: string | null;
+  telegramId: string | null;
+  tgAccess: boolean;
+  online: boolean;
+  lastSeenAt: string | Date | null;
+  netPnl: number | null;
+  rank: number | null;
+  score: number | null;
+  winRate: number | null;
+  count: number;
+  topAsset: string | null;
+  protected: boolean;
+};

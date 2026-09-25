@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   answerBotCallback,
+  editBotMessage,
   parseData,
   sendBotMessage,
   setBotWebhook,
@@ -77,6 +78,11 @@ export class TelegramAppBotService implements OnModuleInit {
   async answer(queryId: string, text: string) {
     if (!this.enabled) return;
     await answerBotCallback(this.token!, queryId, text);
+  }
+
+  async edit(chatId: number | string, messageId: number, text: string, replyMarkup?: TgPayload) {
+    if (!this.enabled) return;
+    await editBotMessage(this.token!, chatId, messageId, text, replyMarkup);
   }
 
   sign(data: string) {

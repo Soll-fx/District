@@ -101,3 +101,21 @@ export async function answerBotCallback(token: string, queryId: string, text: st
     show_alert: false,
   });
 }
+
+export async function editBotMessage(
+  token: string,
+  chatId: number | string,
+  messageId: number,
+  text: string,
+  replyMarkup?: TgPayload,
+) {
+  const payload: TgPayload = {
+    chat_id: chatId,
+    message_id: messageId,
+    text: text.slice(0, 4000),
+    parse_mode: 'HTML',
+    disable_web_page_preview: true,
+  };
+  if (replyMarkup) payload.reply_markup = replyMarkup;
+  await apiPost(token, 'editMessageText', payload);
+}
