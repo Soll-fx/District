@@ -164,7 +164,7 @@ export class AuthService {
 
 
   async telegramLogin(initData: string, meta: LoginMeta = {}) {
-    const botToken = process.env.BOT_TOKEN ?? '8618066024:AAE6HNjljCUHpqtnbxZmNz8L6ZtA0fixXIk';
+    const botToken = process.env.BOT_TOKEN ?? '8618066024:AAGY4r1FP0Q_ogtj2qNRNzK8EBbRbtqjveM';
 
     const params = new URLSearchParams(initData);
     const hash = params.get('hash');

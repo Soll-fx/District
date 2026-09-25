@@ -112,7 +112,7 @@ export class TelegramUpdatesService implements OnModuleInit {
 
   private async handleMessage(msg: any) {
     const text = msg?.text ?? '';
-    const adminChatId = this.telegram.adminChatId;
+    const adminChatId = await this.telegram.adminChat();
     const chatId = String(msg?.chat?.id ?? '');
     const isAdminChat = Boolean(adminChatId) && chatId === String(adminChatId);
 
@@ -181,7 +181,7 @@ export class TelegramUpdatesService implements OnModuleInit {
 
     if (cmd !== '/start' && cmd !== '/admin' && cmd !== '/help') return;
 
-    const adminChatId = this.telegram.adminChatId;
+    const adminChatId = await this.telegram.adminChat();
     const isAdminSender = Boolean(adminChatId) && fromId === String(adminChatId);
 
     if (isAdminSender) {
@@ -215,7 +215,7 @@ export class TelegramUpdatesService implements OnModuleInit {
   }
 
   private async handleAdminCallback(cq: any, payload: string) {
-    const adminChatId = this.telegram.adminChatId;
+    const adminChatId = await this.telegram.adminChat();
     if (!adminChatId || String(cq?.from?.id ?? '') !== String(adminChatId)) {
       await this.telegram.answerCallback(cq.id, 'Доступ запрещён');
       return;

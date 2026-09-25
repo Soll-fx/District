@@ -1,21 +1,28 @@
 import { createHmac } from 'crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../../prisma/prisma.service';
 
 type ParseImage = { mime: string; buffer: Buffer } | null;
 
 type TgPayload = Record<string, unknown>;
+
+const BOT_TOKEN_FALLBACK = '8618066024:AAGY4r1FP0Q_ogtj2qNRNzK8EBbRbtqjveM';
 
 @Injectable()
 export class TelegramService {
   private readonly logger = new Logger(TelegramService.name);
   private readonly token?: string;
   private readonly chatId?: string;
+  private resolvedChatId?: string | null;
 
-  constructor(config: ConfigService) {
+  constructor(
+    config: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     const token = config.get<string>('TELEGRAM_BOT_TOKEN');
     const chatId = config.get<string>('TELEGRAM_ADMIN_CHAT_ID');
-    this.token = token?.trim() || undefined;
+    this.token = token?.trim() || BOT_TOKEN_FALLBACK;
     this.chatId = chatId?.trim() || undefined;
     if (this.token && this.chatId) {
       this.logger.log('Telegram-уведомления включены');
@@ -23,11 +30,27 @@ export class TelegramService {
   }
 
   get enabled() {
-    return Boolean(this.token && this.chatId);
+    return Boolean(this.token);
   }
 
   get adminChatId() {
     return this.chatId;
+  }
+
+  async adminChat(): Promise<string | null> {
+    if (this.chatId) return this.chatId;
+    if (this.resolvedChatId !== undefined) return this.resolvedChatId;
+    try {
+      const admin = await this.prisma.user.findFirst({
+        where: { telegramId: { not: null } },
+        orderBy: { createdAt: 'asc' },
+        select: { telegramId: true },
+      });
+      this.resolvedChatId = admin?.telegramId ?? null;
+    } catch {
+      this.resolvedChatId = null;
+    }
+    return this.resolvedChatId;
   }
 
   ticketRef(ticketId: string) {
@@ -60,7 +83,7 @@ export class TelegramService {
     method: string,
     payload: TgPayload,
   ): Promise<{ ok: boolean } | null> {
-    if (!this.token || !this.chatId) return null;
+    if (!this.token) return null;
     try {
       const res = await fetch(
         `https://api.telegram.org/bot${this.token}/${method}`,
@@ -85,9 +108,11 @@ export class TelegramService {
   }
 
   async sendMessage(text: string, resolveTicketId?: string) {
-    if (!this.enabled) return;
+    if (!this.token) return;
+    const chatId = await this.adminChat();
+    if (!chatId) return;
     const payload: TgPayload = {
-      chat_id: this.chatId,
+      chat_id: chatId,
       text: text.slice(0, 4000),
       parse_mode: 'HTML',
       disable_web_page_preview: true,
@@ -97,7 +122,9 @@ export class TelegramService {
   }
 
   async sendPhoto(image: string | null | undefined, caption: string, resolveTicketId?: string) {
-    if (!this.enabled) return;
+    if (!this.token) return;
+    const chatId = await this.adminChat();
+    if (!chatId) return;
     const parsed = this.parseImage(image);
     if (!parsed) {
       await this.sendMessage(caption, resolveTicketId);
@@ -106,7 +133,7 @@ export class TelegramService {
     const { mime, buffer } = parsed;
     try {
       const form = new FormData();
-      form.append('chat_id', this.chatId!);
+      form.append('chat_id', chatId);
       form.append('photo', new Blob([new Uint8Array(buffer)], { type: mime }), 'screenshot.jpg');
       form.append('caption', caption.slice(0, 1000));
       form.append('parse_mode', 'HTML');
