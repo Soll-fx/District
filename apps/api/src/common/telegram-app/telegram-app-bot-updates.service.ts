@@ -95,6 +95,9 @@ export class TelegramAppBotUpdatesService {
     const chatId: number | string = msg.chat.id;
     const user = await this.prisma.user.findUnique({ where: { telegramId: fromId } });
     const isAdminSender = Boolean(user?.role === 'ADMIN');
+    this.logger.log(
+      `[app-bot] cmd=${cmd} from=${fromId} user=${user?.id ?? 'none'} role=${user?.role ?? 'none'}`,
+    );
 
     if (isAdminSender) {
       await this.sendAdminPanel(chatId);
